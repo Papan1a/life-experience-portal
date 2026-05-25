@@ -39,6 +39,24 @@ public class InviteService {
         inviteRepository.save(invite);
     }
 
+    public Invite getInvite(UUID inviteId) {
+        return inviteRepository.findById(inviteId)
+                .orElseThrow(() -> new IllegalArgumentException("Invite not found"));
+    }
+
+    public Invite validateAndUse(String code) {
+        Invite invite = inviteRepository.findByCode(code)
+                .orElseThrow(() -> new InvalidInviteException("Неверный код приглашения"));
+
+        if (invite.isRevoked()) {
+            throw new InvalidInviteException("Код приглашения отозван");
+        }
+        if (invite.isExpired()) {
+            throw new InvalidInviteException("Срок действия кода приглашения истёк");
+        }
+        return invite;
+    }
+
     public Iterable<Invite> getMyInvites(UUID userId) {
         return inviteRepository.findByCreatedBy(userId);
     }

@@ -4,6 +4,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -23,23 +24,32 @@ public class InviteController {
     @GetMapping
     public String listMyInvites(@AuthenticationPrincipal PortalUserDetails principal, Model model) {
         model.addAttribute("invites", inviteService.getMyInvites(principal.getUserId()));
-        return "invites";
+        return "invite/list";
     }
 
     @PostMapping("/generate")
     public String generateInvite(@AuthenticationPrincipal PortalUserDetails principal,
                                  RedirectAttributes redirectAttributes) {
         Invite invite = inviteService.createInvite(principal.getUserId());
-        redirectAttributes.addFlashAttribute("newInviteCode", invite.getCode());
-        return "redirect:/invites";
+        return "redirect:/invites/" + invite.getId();
     }
 
-    @PostMapping("/revoke")
+    @GetMapping("/{id}")
+    public String showInvite(@AuthenticationPrincipal PortalUserDetails principal,
+                             @PathVariable String id, Model model) {
+        java.util.UUID inviteId = java.util.UUID.fromString(id);
+        Invite invite = inviteService.getInvite(inviteId);
+        model.addAttribute("invite", invite);
+        model.addAttribute("registrationLink", "/register?code=" + invite.getCode());
+        return "invite/show";
+    }
+
+    @PostMapping("/{id}/revoke")
     public String revokeInvite(@AuthenticationPrincipal PortalUserDetails principal,
-                               String inviteId,
+                               @PathVariable String id,
                                RedirectAttributes redirectAttributes) {
         try {
-            inviteService.revokeInvite(java.util.UUID.fromString(inviteId), principal.getUserId());
+            inviteService.revokeInvite(java.util.UUID.fromString(id), principal.getUserId());
             redirectAttributes.addFlashAttribute("success", "Приглашение отозвано");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());

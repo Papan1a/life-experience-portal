@@ -1,10 +1,14 @@
 package com.lep.portal.user;
 
+import java.io.Serializable;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public class RegistrationForm {
+public class RegistrationForm implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @NotBlank
     @Email

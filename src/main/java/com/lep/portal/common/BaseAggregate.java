@@ -1,5 +1,6 @@
 package com.lep.portal.common;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
@@ -10,7 +11,9 @@ import org.springframework.data.domain.Persistable;
  * id is NULL on insert — the DB generates uuidv7() as DEFAULT.
  * Spring Data JDBC treats NULL-id rows as new, avoiding isNew() ambiguity.
  */
-public abstract class BaseAggregate implements Persistable<UUID> {
+public abstract class BaseAggregate implements Persistable<UUID>, Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     protected UUID id;

@@ -1,5 +1,6 @@
 package com.lep.portal.user;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -8,7 +9,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-public class PortalUserDetails implements UserDetails {
+public class PortalUserDetails implements UserDetails, Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private final User user;
 

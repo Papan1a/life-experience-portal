@@ -1,29 +1,30 @@
 package com.lep.portal.user;
 
-import com.lep.portal.common.NotFoundException;
-import com.lep.portal.invite.Invite;
-import com.lep.portal.invite.InviteRepository;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.Optional;
-import java.util.UUID;
+import com.lep.portal.common.NotFoundException;
+import com.lep.portal.invite.Invite;
+import com.lep.portal.invite.InviteService;
 
 @Service
 @Transactional
 public class UserService {
 
     private final UserRepository userRepository;
-    private final InviteRepository inviteRepository;
+    private final InviteService inviteService;
     private final PasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository,
-                       InviteRepository inviteRepository,
+                       InviteService inviteService,
                        PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.inviteRepository = inviteRepository;
+        this.inviteService = inviteService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -34,15 +35,7 @@ public class UserService {
         }
 
         // Validate invite code
-        Invite invite = inviteRepository.findByCode(form.getInviteCode())
-                .orElseThrow(() -> new IllegalArgumentException("Неверный код приглашения"));
-
-        if (invite.isRevoked()) {
-            throw new IllegalArgumentException("Код приглашения отозван");
-        }
-        if (invite.isExpired()) {
-            throw new IllegalArgumentException("Срок действия кода приглашения истёк");
-        }
+        Invite invite = inviteService.validateAndUse(form.getInviteCode());
 
         User user = new User();
         user.setEmail(form.getEmail().toLowerCase().trim());
@@ -50,7 +43,6 @@ public class UserService {
         user.setDisplayName(form.getDisplayName().trim());
         user.setInvitedByUserId(invite.getCreatedBy());
         user.setInviteId(invite.getId());
-        user.setConsentAt(Instant.now());
 
         return userRepository.save(user);
     }

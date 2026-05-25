@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Приглашение создано — Life Experience Portal</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <nav class="nav-bar">
+        <a th:href="@{/}" class="nav-brand">LEP</a>
+        <div class="nav-links">
+            <a th:href="@{/invites}">Приглашения</a>
+            <a th:href="@{/profile}">Профиль</a>
+            <form th:action="@{/logout}" method="post" style="display:inline">
+                <button type="submit" class="btn-link">Выйти</button>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            </form>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h1>Приглашение создано</h1>
+
+        <div class="invite-show-card">
+            <p>Отправьте эту ссылку тому, кого хотите пригласить:</p>
+
+            <div class="invite-link-box">
+                <code class="invite-code-large" th:text="${registrationLink}"></code>
+            </div>
+
+            <div class="invite-details">
+                <p><strong>Код:</strong> <code th:text="${invite.code}"></code></p>
+                <p><strong>Действует до:</strong>
+                    <span th:text="${#temporals.format(invite.expiresAt, 'dd.MM.yyyy HH:mm')}"></span>
+                </p>
+            </div>
+
+            <div class="invite-actions">
+                <a th:href="@{/invites}" class="btn btn-secondary">← К списку приглашений</a>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

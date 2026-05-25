@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация — Life Experience Portal</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <h1>Life Experience Portal</h1>
+        <h2>Регистрация</h2>
+
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+        <div th:if="${inviteCode == null}">
+            <p class="auth-info">
+                Для регистрации необходим код приглашения.<br>
+                Попросите действующего пользователя создать приглашение.
+            </p>
+            <p><a th:href="@{/login}" class="btn btn-secondary">← На страницу входа</a></p>
+        </div>
+
+        <form th:if="${inviteCode != null}"
+              th:action="@{/register}"
+              th:object="${registrationForm}"
+              method="post" class="auth-form">
+
+            <input type="hidden" th:field="*{inviteCode}">
+
+            <div class="form-group">
+                <label for="displayName">Имя</label>
+                <input type="text" id="displayName" th:field="*{displayName}"
+                       required autofocus placeholder="Как вас зовут?" maxlength="100">
+                <span th:if="${#fields.hasErrors('displayName')}"
+                      th:errors="*{displayName}" class="form-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" th:field="*{email}"
+                       required autocomplete="email" placeholder="you@example.com">
+                <span th:if="${#fields.hasErrors('email')}"
+                      th:errors="*{email}" class="form-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Пароль (минимум 8 символов)</label>
+                <input type="password" id="password" th:field="*{password}"
+                       required autocomplete="new-password" placeholder="••••••••" minlength="8">
+                <span th:if="${#fields.hasErrors('password')}"
+                      th:errors="*{password}" class="form-error"></span>
+            </div>
+
+            <div class="form-group checkbox-group">
+                <label>
+                    <input type="checkbox" th:field="*{consent}">
+                    Я согласен на обработку персональных данных
+                </label>
+                <span th:if="${#fields.hasErrors('consent')}"
+                      th:errors="*{consent}" class="form-error"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full">Зарегистрироваться</button>
+
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        </form>
+
+        <p class="auth-footer">
+            Уже есть аккаунт? <a th:href="@{/login}">Войти</a>
+        </p>
+    </div>
+</body>
+</html>

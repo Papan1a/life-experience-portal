@@ -55,7 +55,6 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
         </dependency>
 
         <!-- Flyway -->
@@ -102,6 +101,14 @@
             <groupId>com.bucket4j</groupId>
             <artifactId>bucket4j-core</artifactId>
             <version>8.10.1</version>
+        </dependency>
+
+        <!-- Bouncy Castle (required by Argon2PasswordEncoder at runtime) -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>1.80</version>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- Dev tools -->
