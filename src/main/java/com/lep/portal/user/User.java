@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
 
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -41,9 +43,11 @@ public class User extends BaseAggregate {
     @Column("consent_at")
     private Instant consentAt;
 
+    @CreatedDate
     @Column("created_at")
     private Instant createdAt;
 
+    @LastModifiedDate
     @Column("updated_at")
     private Instant updatedAt;
 
@@ -55,8 +59,6 @@ public class User extends BaseAggregate {
 
     public User() {
         this.consentAt = Instant.now();
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
     }
 
     // ---- Getters / Setters ----

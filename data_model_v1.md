@@ -1,9 +1,9 @@
 # Data Model v1
 
 **Project:** Life Experience Discovery Portal
-**Engine:** PostgreSQL (15+; uses `UNIQUE NULLS NOT DISTINCT`).
+**Engine:** PostgreSQL 18 (uses `UNIQUE NULLS NOT DISTINCT`; `uuidv7()` built-in).
 **Canonical DDL:** `schema.sql` (runnable). This doc = reference + rationale.
-**Validated:** loads on PG16 and passes invariant tests T1–T6 (`uuidv7()` swapped to `gen_random_uuid()` for the PG16 run; production uses UUIDv7 per D1).
+**Validated:** loads on PG18 and passes invariant tests T1–T6.
 **Date:** 2026-05-22
 
 ---
@@ -149,7 +149,7 @@ ENUM types: `activity_status` (DRAFT/ACTIVE/ARCHIVED/BLOCKED), `variant_status` 
 - **User-owned rows:** `user_experiences` / `bookmarks` are mutable user state, `ON DELETE CASCADE` on `user_id`; un-marking/un-saving = row delete (no soft delete here).
 - **Dup-check (warning, non-blocking):** on Activity create, look up `lower(title)` match (indexed) → surface a warning; no DB-level uniqueness on title.
 - **Tag hygiene:** normalize to `slug = lower(trim(name))` before insert; `slug` unique suppresses duplicates; display `name` preserved.
-- **`updated_at`:** maintained by `set_updated_at()` trigger on `users`, `activities`, `variants`, `user_experiences`. *Verified T6.*
+- **Timestamps:** `created_at` and `updated_at` are managed by the application via Spring Data JDBC Auditing (`@CreatedDate` / `@LastModifiedDate`). DB triggers have been dropped (V3 migration). Column DEFAULTs remain as a DB-level fallback.
 
 ---
 
@@ -157,7 +157,7 @@ ENUM types: `activity_status` (DRAFT/ACTIVE/ARCHIVED/BLOCKED), `variant_status` 
 
 **Auth (resolved):** email + password, hashed with **argon2id**, `password_hash NOT NULL`. **Admin-assisted reset** — no transactional email infra in MVP. Email verification skipped (invite-only trust). Login requires rate-limit / lockout against brute-force & credential stuffing.
 
-**Resolved at stack session:** UUIDv7 → DB-side `pg_uuidv7` (`DEFAULT uuid_generate_v7()`). Sessions → Spring Session JDBC (Postgres). Avatars → Cloudflare R2 (key in `users.avatar_url`). See `architecture_v1.md`.
+**Resolved at stack session:** UUIDv7 → DB-side built-in `uuidv7()` (PostgreSQL 18+). Sessions → Spring Session JDBC (Postgres). Avatars → Cloudflare R2 (key in `users.avatar_url`). Timestamps → Spring Data JDBC Auditing. See `architecture_v1.md`.
 
 1. **`complexity_level` set** — confirm `{low, medium, high}` or switch to `{beginner, intermediate, advanced}`.
 2. **`estimated_duration` format** — free text now; consider structured (min/max minutes) if filtering by duration is wanted.

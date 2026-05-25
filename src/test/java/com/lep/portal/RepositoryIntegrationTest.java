@@ -42,7 +42,7 @@ import com.lep.portal.user.UserRepository;
 public class RepositoryIntegrationTest {
 
     @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16")
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:18")
             .withDatabaseName("leptest")
             .withUsername("leptest")
             .withPassword("leptest");

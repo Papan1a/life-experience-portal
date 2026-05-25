@@ -7,7 +7,7 @@ import org.springframework.data.domain.Persistable;
 
 /**
  * Base aggregate root with UUIDv7 primary key.
- * id is NULL on insert — the DB generates uuid_generate_v7() as DEFAULT.
+ * id is NULL on insert — the DB generates uuidv7() as DEFAULT.
  * Spring Data JDBC treats NULL-id rows as new, avoiding isNew() ambiguity.
  */
 public abstract class BaseAggregate implements Persistable<UUID> {

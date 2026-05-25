@@ -3,6 +3,7 @@ package com.lep.portal.catalog;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -20,11 +21,11 @@ public class Tag extends BaseAggregate {
     @Column("created_by")
     private UUID createdBy;
 
+    @CreatedDate
     @Column("created_at")
     private Instant createdAt;
 
     public Tag() {
-        this.createdAt = Instant.now();
     }
 
     public String getSlug() { return slug; }

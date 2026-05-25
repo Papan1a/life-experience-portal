@@ -3,6 +3,7 @@ package com.lep.portal.invite;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -23,11 +24,11 @@ public class Invite extends BaseAggregate {
     @Column("revoked_at")
     private Instant revokedAt;
 
+    @CreatedDate
     @Column("created_at")
     private Instant createdAt;
 
     public Invite() {
-        this.createdAt = Instant.now();
     }
 
     public String getCode() { return code; }

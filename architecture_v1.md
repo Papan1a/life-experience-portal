@@ -19,7 +19,7 @@
 | S6 | Sessions | Spring Session JDBC (sessions persisted in Postgres). |
 | S7 | Admin | Lean: role-gated in-app actions (`is_admin`) + Adminer container for rare DB ops / password reset. |
 | S8 | Avatars | Cloudflare R2 (S3-compatible); store object key in `users.avatar_url`. |
-| S9 | UUIDv7 | DB-side via `pg_uuidv7` (`uuid_generate_v7()` default); app inserts NULL id. |
+| S9 | UUIDv7 | DB-side via built-in `uuidv7()` (PostgreSQL 18+); app inserts NULL id. |
 
 ---
 
@@ -34,7 +34,7 @@ flowchart TB
     subgraph VPS [VPS — Docker Compose]
         CADDY[Caddy<br/>reverse proxy + auto-TLS]
         APP[Spring Boot app<br/>Thymeleaf + HTMX<br/>Spring Security + Session JDBC]
-        DB[(PostgreSQL + pg_uuidv7<br/>app data + sessions)]
+        DB[(PostgreSQL 18<br/>app data + sessions)]
         ADM[Adminer<br/>admin-only, rare DB ops]
     end
     U -->|HTTPS| CADDY
@@ -46,7 +46,7 @@ flowchart TB
     U -->|avatar GET via CDN/presigned| R2
 ```
 
-Containers: `caddy`, `app`, `db` (custom image with `pg_uuidv7`), `adminer`. Avatars live outside the VPS in R2, so a VPS rebuild does not lose user images.
+Containers: `caddy`, `app`, `db` (PostgreSQL 18, uuidv7() built-in), `adminer`. Avatars live outside the VPS in R2, so a VPS rebuild does not lose user images.
 
 ---
 
@@ -58,7 +58,7 @@ docker-compose.yml
 Caddyfile
 docker/
   app.Dockerfile          # multi-stage: build jar, run on JRE
-  db.Dockerfile           # postgres:16 + pg_uuidv7
+  db.Dockerfile           # postgres:18 (uuidv7() built-in)
 src/main/java/com/lep/portal/
   PortalApplication.java
   config/                 # SecurityConfig, SessionConfig, R2Config, WebConfig
@@ -83,10 +83,10 @@ src/test/java/...         # repository (Testcontainers PG), service, web slice t
 ## 4. Data access — Spring Data JDBC (S5) notes
 
 - **Aggregates by id, not object graphs.** Each table is an aggregate root with `@Id UUID id`. Cross-aggregate links use `AggregateReference<T, UUID>` (or a plain `UUID` column). No lazy loading; load aggregates explicitly and compose in services.
-- **UUID generation (S9).** `id` is `NULL` in the entity on insert → Spring Data JDBC treats the row as new → DB `DEFAULT uuid_generate_v7()` generates it → the generated key is read back. This sidesteps the `Persistable.isNew()` ambiguity that arises with app-side ids.
+- **UUID generation (S9).** `id` is `NULL` in the entity on insert → Spring Data JDBC treats the row as new → DB `DEFAULT uuidv7()` generates it → the generated key is read back. This sidesteps the `Persistable.isNew()` ambiguity that arises with app-side ids.
 - **m2m tags (D6).** `activity_tags` / `variant_tags` are modeled as **owned collections inside the Activity/Variant aggregate** via `@MappedCollection` (each row references a Tag by id). Tag normalization stays in the Tag service. Alternative: manage join rows through explicit repository methods if aggregate ownership feels heavy.
 - **Soft delete + visibility (D2/D7).** No ORM cascade. Repositories query the `visible_activities` / `visible_variants` views (or replicate the predicate) for catalog reads. Status transitions are explicit service operations.
-- **updated_at.** Maintained by the DB trigger `set_updated_at()` — do not set it in app code.
+- **Timestamps (created_at / updated_at).** Managed by Spring Data JDBC Auditing (`@EnableJdbcAuditing` + `@CreatedDate` / `@LastModifiedDate`). The application owns timestamps; DB triggers have been dropped (V3). Column DEFAULTs are kept as a DB-level safety net.
 - **Testing.** Repository tests run against real Postgres via Testcontainers (the schema relies on PG-specific features: `NULLS NOT DISTINCT`, composite FK, `pg_uuidv7`). H2 is not viable.
 
 ---
@@ -94,9 +94,9 @@ src/test/java/...         # repository (Testcontainers PG), service, web slice t
 ## 5. Migrations (S2/S4)
 
 - Flyway runs on app startup against the `db/migration` files.
-- `V1__init.sql` is a copy of the validated `schema.sql` (includes `CREATE EXTENSION pg_uuidv7`).
+- `V1__init.sql` is a copy of the validated `schema.sql` (uuidv7() is built-in PG 18+, no extension needed).
 - `V2__spring_session.sql` adds the Spring Session JDBC tables (`SPRING_SESSION`, `SPRING_SESSION_ATTRIBUTES`) using Spring's bundled PostgreSQL DDL.
-- **Extension privilege:** `CREATE EXTENSION` needs sufficient privileges. Either run migrations as the DB superuser, or pre-create `pg_uuidv7` in the image's init scripts and keep the `IF NOT EXISTS` in `V1` idempotent.
+- `V3__remove_timestamp_triggers.sql` drops `set_updated_at()` and all its triggers. Timestamps are now set by the application via JDBC Auditing.
 
 ---
 
@@ -136,7 +136,7 @@ src/test/java/...         # repository (Testcontainers PG), service, web slice t
 2. `estimated_duration` format — free text now; structure later if duration filtering is wanted.
 3. Soft-deleted email uniqueness — recommend a **partial unique** index on `email WHERE deleted_at IS NULL` to allow re-registration after account removal. (Currently global unique.)
 4. Brute-force lib — bucket4j vs hand-rolled attempt counter.
-5. `pg_uuidv7` image build — pin a version/commit; verify build in `db.Dockerfile`.
+5. ~~`pg_uuidv7` image build~~ — resolved: PostgreSQL 18 has built-in `uuidv7()`. No extension build needed.
 6. Reverse proxy — Caddy (recommended) vs nginx.
 
 ---

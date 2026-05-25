@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.MappedCollection;
 import org.springframework.data.relational.core.mapping.Table;
@@ -47,9 +49,11 @@ public class Activity extends BaseAggregate {
     @Column("status")
     private String status;
 
+    @CreatedDate
     @Column("created_at")
     private Instant createdAt;
 
+    @LastModifiedDate
     @Column("updated_at")
     private Instant updatedAt;
 
@@ -57,8 +61,6 @@ public class Activity extends BaseAggregate {
     private Instant deletedAt;
 
     public Activity() {
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
         this.status = "ACTIVE";
     }
 

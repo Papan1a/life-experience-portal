@@ -6,14 +6,12 @@
 --   D6 two tag join tables, D7 query-time visibility, D8 invite traceability.
 -- ============================================================
 
--- ---- UUIDv7 generation (resolved S9: DB-side via pg_uuidv7) ----
---   ids are generated in the DB by pg_uuidv7 -> uuid_generate_v7().
+-- ---- UUIDv7 generation (resolved S9: DB-side, built-in PG 18+) ----
+--   ids are generated in the DB via uuidv7() (built-in, no extension needed).
 --   App (Spring Data JDBC) inserts with NULL id -> treated as new ->
 --   DB generates the key and returns it (avoids the isNew() ambiguity).
---   pg_uuidv7 is provided by our custom Postgres image (we control it).
 
 CREATE EXTENSION IF NOT EXISTS citext;
-CREATE EXTENSION IF NOT EXISTS pg_uuidv7;
 
 -- ============================================================
 -- ENUM types (D3)
@@ -40,7 +38,7 @@ $$ LANGUAGE plpgsql;
 --   Email verification skipped in MVP (invite-only trust). Sessions: decided at stack session.
 -- ============================================================
 CREATE TABLE users (
-    id                 uuid PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id                 uuid PRIMARY KEY DEFAULT uuidv7(),
     email              citext NOT NULL UNIQUE,
     password_hash      text NOT NULL,                         -- argon2id; set at registration
     display_name       text NOT NULL,
@@ -61,7 +59,7 @@ CREATE TRIGGER trg_users_updated BEFORE UPDATE ON users
 -- invites (D8) — reusable code, no per-use limit, TTL = created + 7d
 -- ============================================================
 CREATE TABLE invites (
-    id          uuid PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id          uuid PRIMARY KEY DEFAULT uuidv7(),
     code        text NOT NULL UNIQUE,
     created_by  uuid NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
     expires_at  timestamptz NOT NULL,                          -- set in app: created_at + interval '7 days'
@@ -78,7 +76,7 @@ ALTER TABLE users
 -- categories — fixed lookup, RU labels, runtime-immutable
 -- ============================================================
 CREATE TABLE categories (
-    id         uuid PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id         uuid PRIMARY KEY DEFAULT uuidv7(),
     slug       text NOT NULL UNIQUE,                           -- stable internal key
     label_ru   text NOT NULL,
     sort_order smallint NOT NULL DEFAULT 0,
@@ -100,7 +98,7 @@ INSERT INTO categories (slug, label_ru, sort_order) VALUES
 -- activities
 -- ============================================================
 CREATE TABLE activities (
-    id                 uuid PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id                 uuid PRIMARY KEY DEFAULT uuidv7(),
     title              text NOT NULL,
     description        text,
     category_id        uuid NOT NULL REFERENCES categories(id) ON DELETE RESTRICT,
@@ -126,7 +124,7 @@ CREATE TRIGGER trg_activities_updated BEFORE UPDATE ON activities
 -- variants — created ACTIVE; UNIQUE(id, activity_id) enables composite FKs (D5)
 -- ============================================================
 CREATE TABLE variants (
-    id                 uuid PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id                 uuid PRIMARY KEY DEFAULT uuidv7(),
     activity_id        uuid NOT NULL REFERENCES activities(id) ON DELETE RESTRICT,
     title              text NOT NULL,
     description        text,
@@ -147,7 +145,7 @@ CREATE TRIGGER trg_variants_updated BEFORE UPDATE ON variants
 -- tags — user-creatable, case-normalized (slug)
 -- ============================================================
 CREATE TABLE tags (
-    id         uuid PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id         uuid PRIMARY KEY DEFAULT uuidv7(),
     slug       text NOT NULL UNIQUE,                           -- normalized: lower(trim(name))
     name       text NOT NULL,                                  -- display form
     created_by uuid REFERENCES users(id) ON DELETE SET NULL,
@@ -177,7 +175,7 @@ CREATE INDEX idx_variant_tags_tag ON variant_tags (tag_id);
 --   variant_id NULL = activity-level row. NULL treated as a value (NOT DISTINCT).
 -- ============================================================
 CREATE TABLE user_experiences (
-    id          uuid PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id          uuid PRIMARY KEY DEFAULT uuidv7(),
     user_id     uuid NOT NULL REFERENCES users(id)      ON DELETE CASCADE,
     activity_id uuid NOT NULL REFERENCES activities(id) ON DELETE RESTRICT,
     variant_id  uuid,
@@ -200,7 +198,7 @@ CREATE TRIGGER trg_ux_updated BEFORE UPDATE ON user_experiences
 -- bookmarks (D5) — mirrors user_experiences target shape
 -- ============================================================
 CREATE TABLE bookmarks (
-    id          uuid PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id          uuid PRIMARY KEY DEFAULT uuidv7(),
     user_id     uuid NOT NULL REFERENCES users(id)      ON DELETE CASCADE,
     activity_id uuid NOT NULL REFERENCES activities(id) ON DELETE RESTRICT,
     variant_id  uuid,

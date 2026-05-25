@@ -31,9 +31,9 @@
 ### Правила генерации кода
 - Не генерируй код за пределами текущего блока.
 - Не изменяй `schema.sql` — это источник правды. Flyway-миграции копируют его.
-- Используй UUIDv7 (DB-side, `uuid_generate_v7()`). Не генерируй UUID в приложении.
+- Используй UUIDv7 (DB-side, `uuidv7()` — встроенная функция PostgreSQL 18+). Не генерируй UUID в приложении.
 - Soft delete везде: никогда не делай `DELETE` для контентных таблиц.
-- `updated_at` поддерживается триггером в БД — не трогай в Java-коде.
+- `created_at` / `updated_at` управляются через Spring Data JDBC Auditing (`@CreatedDate` / `@LastModifiedDate`). Не устанавливай их вручную в Java-коде.
 - Язык UI — русский. Язык кода, комментариев, логов — английский.
 
 ### Порядок коммитов
@@ -66,7 +66,7 @@ git commit -m "block-N: <краткое описание>"
 - `spring-boot-starter-test`
 - `testcontainers` (модули `junit-jupiter`, `postgresql`)
 
-Java 21, Spring Boot 3.x.
+Java 21, Spring Boot 3.4.x.
 
 **0.2 — Структура директорий**
 Создай пустые пакеты по `architecture_v1.md` §3:
@@ -172,6 +172,13 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/
 ---
 
 ## БЛОК 1 — Доменные агрегаты и репозитории
+
+**Важно (БЛОК 1.5):** В проект добавлены:
+- `JdbcAuditingConfig` с `@EnableJdbcAuditing` — управляет `@CreatedDate` / `@LastModifiedDate`
+- `V3__remove_timestamp_triggers.sql` — дропает все триггеры `set_updated_at()`
+- Java 21, PostgreSQL 18, `uuidv7()` встроенная
+- Не устанавливай `createdAt` / `updatedAt` в конструкторах агрегатов — это делает Auditing
+
 
 **Цель:** все Java-агрегаты (records/классы) + Spring Data JDBC репозитории + Testcontainers тесты репозиториев.
 

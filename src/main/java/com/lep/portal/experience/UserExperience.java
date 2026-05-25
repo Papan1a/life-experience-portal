@@ -3,6 +3,8 @@ package com.lep.portal.experience;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -26,15 +28,15 @@ public class UserExperience extends BaseAggregate {
     @Column("note")
     private String note;
 
+    @CreatedDate
     @Column("created_at")
     private Instant createdAt;
 
+    @LastModifiedDate
     @Column("updated_at")
     private Instant updatedAt;
 
     public UserExperience() {
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
     }
 
     public UUID getUserId() { return userId; }

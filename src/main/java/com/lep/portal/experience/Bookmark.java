@@ -3,6 +3,7 @@ package com.lep.portal.experience;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -20,11 +21,11 @@ public class Bookmark extends BaseAggregate {
     @Column("variant_id")
     private UUID variantId;
 
+    @CreatedDate
     @Column("created_at")
     private Instant createdAt;
 
     public Bookmark() {
-        this.createdAt = Instant.now();
     }
 
     public UUID getUserId() { return userId; }
