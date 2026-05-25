@@ -166,7 +166,7 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/
 ```
 
 **Если T0.1 падает** → проверь зависимости в pom.xml, версии, репозитории Maven.
-**Если T0.3 падает** → проверь что V1__init.sql идентичен schema.sql; проверь расширение pg_uuidv7 в образе db.
+**Если T0.3 падает** → проверь что V1__init.sql идентичен schema.sql; проверь что `db.Dockerfile` использует `postgres:18` (`uuidv7()` встроенная).
 **Если после 3 попыток** → СТОП.
 
 ---
@@ -197,7 +197,7 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/
 9. `experience/Bookmark` — агрегат + репозиторий
 
 ### Требования к агрегатам
-- `@Id UUID id` — не генерировать в Java, вставлять `null` → БД генерирует через `uuid_generate_v7()`.
+- `@Id UUID id` — не генерировать в Java, вставлять `null` → БД генерирует через `uuidv7()` (встроенная функция PostgreSQL 18+).
 - Поля enum как Java enum, маппинг через `JdbcConverter` или `@Column` с конвертером.
 - Soft delete: репозитории содержат методы типа `findByIdAndDeletedAtIsNull(...)`.
 - Видимость через вьюхи `visible_activities` / `visible_variants` — делай отдельные read-методы или используй `@Query` с этими вьюхами.
@@ -264,10 +264,7 @@ T1.8 — Soft delete: удалить activity (deleted_at=now) → visible_activ
 `POST /logout` → инвалидация сессии
 
 **2.5 — Invite generation**
-`POST /invites` (только авторизованный пользователь) → создать Invite (`code=random UUID`, `expires_at=now+7d`, `created_by=currentUser`) → вернуть страницу с кодом и ссылкой
-
-**2.6 — Rate limiting (базовый)**
-Добавь простой счётчик неудачных попыток входа на IP (in-memory Map + `@Scheduled` очистка каждый час). После 10 неудач за час → 429 на `/login`.
+`POST /invites/generate` (только авторизованный пользователь) → создать Invite (`code=random UUID`, `expires_at=now+7d`, `created_by=currentUser`) → redirect на `/invites/{id}` со страницей с кодом и ссылкой
 
 ### Шаблоны (Thymeleaf, RU)
 - `templates/auth/login.html`
@@ -284,12 +281,13 @@ T2.4 — POST /register с просроченным/несуществующим
 T2.5 — POST /register с валидным инвайтом → пользователь создан в БД, redirect /
 T2.6 — POST /register с тем же email повторно → ошибка на форме
 T2.7 — GET / без сессии → redirect /login
-T2.8 — POST /invites (авторизован) → инвайт создан, TTL=7 дней
+T2.4b — POST /register с просроченным инвайтом → ошибка на форме
+T2.8 — POST /invites/generate (авторизован) → инвайт создан, TTL=7 дней
 ```
 
 ```bash
 ./mvnw test -Dtest=AuthIntegrationTest
-# Ожидание: Tests run: 8, Failures: 0, Errors: 0
+# Ожидание: Tests run: 9, Failures: 0, Errors: 0
 ```
 
 **Если T2.4 падает** → проверь логику InviteService и передачу ошибки в модель.
@@ -301,6 +299,13 @@ T2.8 — POST /invites (авторизован) → инвайт создан, T
 ## БЛОК 3 — Каталог: просмотр и поиск
 
 **Цель:** главная страница с каталогом, фильтрация по категории и тегам, страница активити, страница варианта.
+
+### Pre-flight: HTMX
+
+Каталог использует HTMX (S1) для фильтрации без перезагрузки. Перед началом блока:
+- Скачай `htmx.min.js` (последний стабильный, ~14KB) в `src/main/resources/static/js/htmx.min.js`
+- Создай `templates/_layout.html` с `<script src="/js/htmx.min.js"></script>` и blocks для контента
+- Перенеси существующие `login.html` / `register.html` на этот layout, если нужна консистентность header'ов
 
 ### Шаги
 
@@ -603,7 +608,7 @@ T7.8 — Дочерние варианты архивированной акти
 ### Шаги
 
 **8.1 — Seed первого admin**
-Добавь Flyway-миграцию `V3__seed_admin.sql`:
+Добавь Flyway-миграцию `V5__seed_admin.sql` (V3 уже используется для удаления триггеров, V4 — partial unique email):
 ```sql
 -- Placeholder: пароль устанавливается вручную через Adminer после деплоя.
 -- Или: читай из env при старте через DataSourceInitializer.
@@ -694,3 +699,4 @@ docker compose logs app | grep -i error
 - Загрузка изображений кроме аватаров
 - Moderator role (только is_admin)
 - AI duplicate detection
+- Login rate-limiting (счётчик неудачных попыток входа на IP, 429 после превышения). Bucket4j присутствует в `pom.xml`, реализация отложена до появления реальной нагрузки/атак.

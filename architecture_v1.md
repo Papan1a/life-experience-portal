@@ -87,7 +87,7 @@ src/test/java/...         # repository (Testcontainers PG), service, web slice t
 - **m2m tags (D6).** `activity_tags` / `variant_tags` are modeled as **owned collections inside the Activity/Variant aggregate** via `@MappedCollection` (each row references a Tag by id). Tag normalization stays in the Tag service. Alternative: manage join rows through explicit repository methods if aggregate ownership feels heavy.
 - **Soft delete + visibility (D2/D7).** No ORM cascade. Repositories query the `visible_activities` / `visible_variants` views (or replicate the predicate) for catalog reads. Status transitions are explicit service operations.
 - **Timestamps (created_at / updated_at).** Managed by Spring Data JDBC Auditing (`@EnableJdbcAuditing` + `@CreatedDate` / `@LastModifiedDate`). The application owns timestamps; DB triggers have been dropped (V3). Column DEFAULTs are kept as a DB-level safety net.
-- **Testing.** Repository tests run against real Postgres via Testcontainers (the schema relies on PG-specific features: `NULLS NOT DISTINCT`, composite FK, `pg_uuidv7`). H2 is not viable.
+- **Testing.** Repository tests run against real Postgres via Testcontainers (the schema relies on PG-specific features: `NULLS NOT DISTINCT`, composite FK, built-in `uuidv7()`). H2 is not viable.
 
 ---
 
