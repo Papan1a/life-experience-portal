@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(try { $xml = Invoke-WebRequest -Uri 'https://repo.maven.apache.org/maven2/org/testcontainers/testcontainers-bom/maven-metadata.xml' -TimeoutSec 15 -UseBasicParsing; [xml]$x = $xml.Content; $x.metadata.versioning.latest; \"---\"; $x.metadata.versioning.versions.version | Select-Object -Last 15 } catch { \"FETCH_FAILED: $_\" })",
+      "PowerShell(try { $pom = Invoke-WebRequest -Uri 'https://repo.maven.apache.org/maven2/org/testcontainers/testcontainers-bom/2.0.5/testcontainers-bom-2.0.5.pom' -TimeoutSec 15 -UseBasicParsing; [xml]$x = $pom.Content; $x.project.dependencyManagement.dependencies.dependency | ForEach-Object { \"$\\($_.groupId\\):$\\($_.artifactId\\):$\\($_.version\\)\" } } catch { \"FETCH_FAILED: $_\" })",
+      "Bash(./mvnw test *)"
+    ]
+  }
+}

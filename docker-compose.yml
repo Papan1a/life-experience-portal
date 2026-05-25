@@ -1,0 +1,70 @@
+# docker-compose.yml — VPS deployment skeleton (S3).
+# Secrets come from a .env file (not committed). app.Dockerfile is produced in the
+# implementation session; this file encodes the infra decisions S3/S6/S7/S8/S9.
+
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/app.Dockerfile
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      # Cloudflare R2 (S8) — S3-compatible
+      R2_ENDPOINT: ${R2_ENDPOINT}
+      R2_BUCKET: ${R2_BUCKET}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
+      APP_AVATAR_MAX_BYTES: ${APP_AVATAR_MAX_BYTES:-2097152}
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "8080"
+
+  db:
+    build:
+      context: .
+      dockerfile: docker/db.Dockerfile
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Admin-only DB UI (S7). Restrict exposure via Caddy (auth/IP allowlist),
+  # do NOT publish this port directly to the internet.
+  adminer:
+    image: adminer:4
+    restart: unless-stopped
+    depends_on:
+      - db
+    expose:
+      - "8080"
+
+volumes:
+  db_data:
+  caddy_data:
+  caddy_config:
