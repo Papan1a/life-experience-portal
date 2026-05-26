@@ -9,6 +9,10 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+      ADMINER_ALLOWED_IPS: ${ADMINER_ALLOWED_IPS:-0.0.0.0/0}
+      CADDY_EMAIL: ${CADDY_EMAIL:-admin@lep.example.com}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -65,8 +69,8 @@ services:
     restart: unless-stopped
     depends_on:
       - db
-    expose:
-      - "8080"
+    ports:
+      - "8081:8080"
 
 volumes:
   db_data:

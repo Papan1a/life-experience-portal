@@ -7,9 +7,6 @@
 }
 
 {$DOMAIN:localhost} {
-    # Spring Boot app
-    reverse_proxy app:8080
-
     # Security headers
     header {
         X-Content-Type-Options nosniff
@@ -17,15 +14,20 @@
         X-XSS-Protection "1; mode=block"
         Referrer-Policy strict-origin-when-cross-origin
     }
-}
 
-# Adminer — restrict by IP allowlist (VPS internal or VPN).
-{$DOMAIN:localhost}/adminer* {
-    @allowed remote_ip {$ADMINER_ALLOWED_IPS:127.0.0.1}
-    handle @allowed {
-        reverse_proxy adminer:8080
+    # Adminer — restrict by IP allowlist
+    handle /adminer* {
+        @blocked not remote_ip {$ADMINER_ALLOWED_IPS:127.0.0.1}
+        handle @blocked {
+            respond "403 Forbidden" 403
+        }
+        handle {
+            reverse_proxy adminer:8080
+        }
     }
+
+    # Spring Boot app — всё остальное
     handle {
-        respond "403 Forbidden" 403
+        reverse_proxy app:8080
     }
 }
