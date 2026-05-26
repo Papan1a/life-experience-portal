@@ -2,6 +2,10 @@
 # Reverse proxy with automatic TLS.
 # Place your domain below; Caddy obtains Let's Encrypt certs automatically.
 
+{
+    email {$CADDY_EMAIL:admin@lep.example.com}
+}
+
 {$DOMAIN:localhost} {
     # Spring Boot app
     reverse_proxy app:8080
@@ -16,13 +20,12 @@
 }
 
 # Adminer — restrict by IP allowlist (VPS internal or VPN).
-# Uncomment and set YOUR_VPN_IP / YOUR_TRUSTED_IP for production.
-# :8081 {
-#     @allowed remote_ip YOUR_VPN_IP YOUR_TRUSTED_IP
-#     handle @allowed {
-#         reverse_proxy adminer:8080
-#     }
-#     handle {
-#         abort
-#     }
-# }
+{$DOMAIN:localhost}/adminer* {
+    @allowed remote_ip {$ADMINER_ALLOWED_IPS:127.0.0.1}
+    handle @allowed {
+        reverse_proxy adminer:8080
+    }
+    handle {
+        respond "403 Forbidden" 403
+    }
+}

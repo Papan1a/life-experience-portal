@@ -36,6 +36,14 @@ app:
   invite:
     ttl-days: 7
 
+# Bootstrap admin (first deployment only).
+# Set via env vars: ADMIN_BOOTSTRAP_EMAIL, ADMIN_BOOTSTRAP_PASSWORD.
+# If both are set and no admin exists, one is created on startup.
+# Remove/comment after admin creation.
+admin-bootstrap:
+  email: ${ADMIN_BOOTSTRAP_EMAIL:}
+  password: ${ADMIN_BOOTSTRAP_PASSWORD:}
+
 logging:
   level:
     com.lep.portal: DEBUG

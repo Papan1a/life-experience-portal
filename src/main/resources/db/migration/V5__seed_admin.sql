@@ -1,0 +1,15 @@
+-- ============================================================
+-- V5: First admin seed — placeholder documentation.
+--
+-- The first admin user is NOT created via SQL migration.
+-- Instead, BootstrapApplicationRunner checks at startup:
+--   IF no admin exists AND ADMIN_BOOTSTRAP_EMAIL + ADMIN_BOOTSTRAP_PASSWORD
+--      are set → creates the admin automatically.
+--   IF no admin exists AND env vars are missing → logs instructions.
+--
+-- This migration exists solely as a documentation marker in the
+-- Flyway history so that the sequence is clear: V1 (schema), V2
+-- (spring session), V3 (remove triggers), V4 (partial unique email),
+-- V5 (seed admin — handled in application code).
+-- ============================================================
+SELECT 1; -- no-op, documentation only
