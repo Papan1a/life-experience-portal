@@ -67,6 +67,7 @@ public class CatalogIntegrationTest {
     private UUID sportCategoryId;
     private UUID learningCategoryId;
     private UUID sportActivityId;
+    private UUID learningActivityId;
     private UUID archivedActivityId;
     private UUID waterVariantId;
     private UUID waterTagId;
@@ -108,7 +109,7 @@ public class CatalogIntegrationTest {
                 sportActivityId.toString(), sportCategoryId.toString(), seedUser.getId().toString());
 
         // Create another visible activity in "learning"
-        UUID learningActivityId = UUID.randomUUID();
+        learningActivityId = UUID.randomUUID();
         jdbcTemplate.update(
                 "INSERT INTO activities (id, title, description, category_id, complexity, cost_tier, " +
                 "estimated_duration, created_by, status) " +
@@ -295,5 +296,63 @@ public class CatalogIntegrationTest {
                 // Fragment should contain the Thymeleaf fragment name
                 .andExpect(content().string(
                         org.hamcrest.Matchers.containsString("catalog-results")));
+    }
+
+    // ---- T3.9 — Variant belonging to activity X, requested under activity Y → 404 ----
+    @Test
+    @Order(9)
+    @DisplayName("T3.9 — GET /activities/{otherId}/variants/{variantId} (variant чужой активити) → 404")
+    void variantOfOtherActivityReturns404() throws Exception {
+        login();
+
+        // waterVariant belongs to sportActivity, not learningActivity
+        mockMvc.perform(get("/activities/" + learningActivityId + "/variants/" + waterVariantId)
+                        .cookie(sessionCookie))
+                .andExpect(status().isNotFound());
+    }
+
+    // ---- T3.10 — BLOCKED activity → 404 (not in visible_activities view) ----
+    @Test
+    @Order(10)
+    @DisplayName("T3.10 — GET /activities/{blockedId} → 404 (BLOCKED не видна через вьюху)")
+    void blockedActivityReturns404() throws Exception {
+        login();
+
+        UUID blockedActivityId = UUID.randomUUID();
+        jdbcTemplate.update(
+                "INSERT INTO activities (id, title, description, category_id, created_by, status) " +
+                "VALUES (?::uuid, 'Заблокированная активность', 'Не должна быть видна', ?::uuid, ?::uuid, 'BLOCKED')",
+                blockedActivityId.toString(), sportCategoryId.toString(), seedUser.getId().toString());
+
+        mockMvc.perform(get("/activities/" + blockedActivityId).cookie(sessionCookie))
+                .andExpect(status().isNotFound());
+    }
+
+    // ---- T3.11 — Pagination: GET /?page=2 with >20 activities ----
+    @Test
+    @Order(11)
+    @DisplayName("T3.11 — GET /?page=2 → вторая страница каталога с пагинацией")
+    void catalogPaginationSecondPage() throws Exception {
+        login();
+
+        // Create 21 additional activities (total will be > 20 with seed activities)
+        for (int i = 1; i <= 21; i++) {
+            String num = String.format("%02d", i);
+            jdbcTemplate.update(
+                    "INSERT INTO activities (id, title, description, category_id, created_by, status) " +
+                    "VALUES (?::uuid, ?, 'Описание ' || ?, ?::uuid, ?::uuid, 'ACTIVE')",
+                    UUID.randomUUID().toString(),
+                    "Пагинация " + num,
+                    num,
+                    sportCategoryId.toString(),
+                    seedUser.getId().toString());
+        }
+
+        mockMvc.perform(get("/").cookie(sessionCookie).param("page", "2"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(
+                        org.hamcrest.Matchers.containsString("Страница ")))
+                .andExpect(content().string(
+                        org.hamcrest.Matchers.containsString("<strong>2</strong>")));
     }
 }

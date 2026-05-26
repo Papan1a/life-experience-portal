@@ -215,11 +215,14 @@ T1.5 — UserExperience: создать activity-level (variant_id=null) и vari
 T1.6 — UserExperience: попытка создать дубль → ожидать ConstraintViolationException
 T1.7 — Bookmark: аналогично T1.5–T1.6
 T1.8 — Soft delete: удалить activity (deleted_at=now) → visible_activities не возвращает её
+T1.9 — Soft delete variant: установить deleted_at у variant → visible_variants не возвращает его, но findById находит
+T1.10 — Bookmark variant-level: создать закладку с variantId → найти по findByUserActivityVariant
+T1.11 — Tag.searchByName: поиск по части имени, case-insensitive
 ```
 
 ```bash
 ./mvnw test -Dtest=RepositoryIntegrationTest
-# Ожидание: Tests run: 8, Failures: 0, Errors: 0
+# Ожидание: Tests run: 11, Failures: 0, Errors: 0
 ```
 
 **Если T1.4 или T1.6 падают** → проверь constraints в schema.sql и маппинг enum-типов PG.
@@ -283,11 +286,14 @@ T2.6 — POST /register с тем же email повторно → ошибка �
 T2.7 — GET / без сессии → redirect /login
 T2.4b — POST /register с просроченным инвайтом → ошибка на форме
 T2.8 — POST /invites/generate (авторизован) → инвайт создан, TTL=7 дней
+T2.9 — POST /register без consent (consent=false) → 302 redirect, пользователь не создан в БД
+T2.10 — POST /register с паролем <8 символов → 302 redirect, пользователь не создан в БД
+T2.11 — POST /logout → сессия инвалидирована, последующий GET / → 302 redirect /login
 ```
 
 ```bash
 ./mvnw test -Dtest=AuthIntegrationTest
-# Ожидание: Tests run: 9, Failures: 0, Errors: 0
+# Ожидание: Tests run: 12, Failures: 0, Errors: 0
 ```
 
 **Если T2.4 падает** → проверь логику InviteService и передачу ошибки в модель.
@@ -348,11 +354,14 @@ T3.5 — GET /activities/{nonexistent} → 404
 T3.6 — GET /activities/{archivedId} → 404 (невидима через вьюху)
 T3.7 — GET /activities/{activityId}/variants/{variantId} → 200
 T3.8 — HTMX фильтр: GET /?category=sport с заголовком HX-Request:true → возвращает фрагмент, не полную страницу
+T3.9 — GET /activities/{activityId}/variants/{variantId} где variant принадлежит другой activity → 404
+T3.10 — GET /activities/{id} для BLOCKED активити → 404
+T3.11 — Пагинация: GET /?page=2 → отображается "Страница <strong>2</strong>"
 ```
 
 ```bash
 ./mvnw test -Dtest=CatalogIntegrationTest
-# Ожидание: Tests run: 8, Failures: 0, Errors: 0
+# Ожидание: Tests run: 11, Failures: 0, Errors: 0
 ```
 
 **Если T3.6 падает** → проверь что контроллер использует `visible_activities` вьюху, а не прямой запрос к `activities`.
@@ -417,11 +426,15 @@ T4.5 — POST /activities с title дубля + force=true → Activity созд
 T4.6 — GET /tags/suggest?q=wa (HTMX) → список тегов начинающихся с "wa"
 T4.7 — POST /activities/{activityId}/variants → Variant создан, status=ACTIVE
 T4.8 — GET /activities/{id}/edit чужой активити (не автор, не admin) → 403
+T4.9 — GET /activities/{id}/edit своей активити (автор) → 200, содержит title
+T4.10 — POST /activities/{id} (update) с новым title → 302 redirect, title обновлён в БД
+T4.11 — POST /activities без авторизации (без cookie) → 302 redirect /login
+T4.12 — POST /activities/{id}/variants где activity.status=ARCHIVED → 404
 ```
 
 ```bash
 ./mvnw test -Dtest=ContentCreationIntegrationTest
-# Ожидание: Tests run: 8, Failures: 0, Errors: 0
+# Ожидание: Tests run: 12, Failures: 0, Errors: 0
 ```
 
 **Если T4.4 падает** → проверь что dup-check использует `lower(title)` индекс и что предупреждение передаётся в модель.

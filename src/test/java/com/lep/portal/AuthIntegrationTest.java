@@ -321,4 +321,79 @@ public class AuthIntegrationTest {
         long days = ChronoUnit.DAYS.between(Instant.now(), expiresAt.toInstant());
         assertThat(days).isBetween(6L, 7L);
     }
+
+    // ---- T2.9 ----
+    @Test
+    @Order(10)
+    @DisplayName("T2.9 — POST /register без consent → пользователь не создан в БД")
+    void registerWithoutConsentDoesNotCreateUser() throws Exception {
+        mockMvc.perform(post("/register")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("inviteCode", validInviteCode)
+                        .param("displayName", "No Consent User")
+                        .param("email", "noconsent@test.com")
+                        .param("password", "password123")
+                        .param("consent", "false")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/register?code=" + validInviteCode));
+
+        Boolean exists = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) > 0 FROM users WHERE email = ?",
+                Boolean.class, "noconsent@test.com");
+        assertThat(exists).isFalse();
+    }
+
+    // ---- T2.10 ----
+    @Test
+    @Order(11)
+    @DisplayName("T2.10 — POST /register пароль < 8 символов → пользователь не создан в БД")
+    void registerWithShortPasswordDoesNotCreateUser() throws Exception {
+        mockMvc.perform(post("/register")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("inviteCode", validInviteCode)
+                        .param("displayName", "Short Pass User")
+                        .param("email", "shortpass@test.com")
+                        .param("password", "1234567")
+                        .param("consent", "true")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/register?code=" + validInviteCode));
+
+        Boolean exists = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) > 0 FROM users WHERE email = ?",
+                Boolean.class, "shortpass@test.com");
+        assertThat(exists).isFalse();
+    }
+
+    // ---- T2.11 ----
+    @Test
+    @Order(12)
+    @DisplayName("T2.11 — POST /logout → сессия инвалидирована, повторный запрос → /login")
+    void logoutInvalidatesSession() throws Exception {
+        // Login
+        var loginResult = mockMvc.perform(formLogin("/login")
+                        .user("username", "seed@test.com")
+                        .password("password123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/"))
+                .andReturn();
+
+        jakarta.servlet.http.Cookie sessionCookie = loginResult.getResponse().getCookie("SESSION");
+        assertThat(sessionCookie).isNotNull();
+
+        // Verify session is active
+        mockMvc.perform(get("/").cookie(sessionCookie))
+                .andExpect(status().isOk());
+
+        // Logout
+        mockMvc.perform(post("/logout").cookie(sessionCookie).with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login?logout"));
+
+        // Session should be invalid — subsequent request redirects to /login
+        mockMvc.perform(get("/").cookie(sessionCookie))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
+    }
 }

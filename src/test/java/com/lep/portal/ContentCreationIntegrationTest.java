@@ -181,7 +181,7 @@ public class ContentCreationIntegrationTest {
                         .param("title", "Горные лыжи")
                         .param("description", "Катание на горных лыжах")
                         .param("categoryId", sportCategoryId.toString())
-                        .param("complexity", "advanced")
+                        .param("complexity", "high")
                         .param("costTier", "high")
                         .param("estimatedDuration", "4 часа")
                         .param("tags", "горы, зима"))
@@ -297,7 +297,7 @@ public class ContentCreationIntegrationTest {
                 .andExpect(content().string(
                         org.hamcrest.Matchers.containsString("Ходьба")))
                 .andExpect(content().string(
-                        org.hamcrest.Matchers.containsString("Виндсёрфинг")))
+                        org.hamcrest.Matchers.containsString("Вейкбординг")))
                 // "cycling" should NOT be present
                 .andExpect(content().string(
                         org.hamcrest.Matchers.not(
@@ -345,5 +345,78 @@ public class ContentCreationIntegrationTest {
 
         mockMvc.perform(get("/activities/" + activityId + "/edit").cookie(otherSession))
                 .andExpect(status().isForbidden());
+    }
+
+    // ---- T4.9 — GET /activities/{id}/edit своей активити → 200 ----
+    @Test
+    @Order(9)
+    @DisplayName("T4.9 — GET /activities/{id}/edit своей активити (автор) → 200")
+    void editOwnActivityReturns200() throws Exception {
+        loginCreator();
+        UUID activityId = createActivityViaApi("Сёрфинг", creatorSession);
+
+        mockMvc.perform(get("/activities/" + activityId + "/edit").cookie(creatorSession))
+                .andExpect(status().isOk())
+                .andExpect(content().string(
+                        org.hamcrest.Matchers.containsString("Сёрфинг")));
+    }
+
+    // ---- T4.10 — POST /activities/{id} (update) ----
+    @Test
+    @Order(10)
+    @DisplayName("T4.10 — POST /activities/{id} с новыми данными → redirect, данные обновлены в БД")
+    void updateActivitySucceeds() throws Exception {
+        loginCreator();
+        UUID activityId = createActivityViaApi("Старое название", creatorSession);
+
+        mockMvc.perform(post("/activities/" + activityId)
+                        .cookie(creatorSession)
+                        .with(csrf())
+                        .param("title", "Новое название")
+                        .param("description", "Обновлённое описание")
+                        .param("categoryId", sportCategoryId.toString())
+                        .param("complexity", "high")
+                        .param("costTier", "mid"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("/activities/*"));
+
+        String newTitle = jdbcTemplate.queryForObject(
+                "SELECT title FROM activities WHERE id = ?::uuid",
+                String.class, activityId.toString());
+        assertThat(newTitle).isEqualTo("Новое название");
+    }
+
+    // ---- T4.11 — POST /activities без авторизации → 302 ----
+    @Test
+    @Order(11)
+    @DisplayName("T4.11 — POST /activities без авторизации → 302 (redirect на /login)")
+    void createActivityWithoutAuthRedirectsToLogin() throws Exception {
+        mockMvc.perform(post("/activities")
+                        .with(csrf())
+                        .param("title", "Без авторизации")
+                        .param("categoryId", sportCategoryId.toString()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
+    }
+
+    // ---- T4.12 — Variant на ARCHIVED активити → ошибка ----
+    @Test
+    @Order(12)
+    @DisplayName("T4.12 — POST /activities/{id}/variants на ARCHIVED активити → 404")
+    void createVariantOnArchivedActivityReturns404() throws Exception {
+        loginCreator();
+        UUID activityId = createActivityViaApi("Архивируемая активность", creatorSession);
+
+        // Archive the activity
+        jdbcTemplate.update(
+                "UPDATE activities SET status = 'ARCHIVED' WHERE id = ?::uuid",
+                activityId.toString());
+
+        mockMvc.perform(post("/activities/" + activityId + "/variants")
+                        .cookie(creatorSession)
+                        .with(csrf())
+                        .param("title", "Вариант для архивной")
+                        .param("description", "Не должен создаться"))
+                .andExpect(status().isNotFound());
     }
 }

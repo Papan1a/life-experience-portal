@@ -265,4 +265,100 @@ public class RepositoryIntegrationTest {
         List<Activity> visibleAfter = activityRepository.findAllVisible();
         assertThat(visibleAfter).extracting(Activity::getId).doesNotContain(a.getId());
     }
+
+    // ---- T1.9 ----
+    @Test
+    @DisplayName("T1.9 — Soft delete: variant deleted_at -> not in visible_variants")
+    void softDeleteHidesVariant() {
+        Activity a = new Activity();
+        a.setTitle("Variant Delete Test");
+        a.setCategoryId(category.getId());
+        a.setCreatedBy(adminUser.getId());
+        a.setStatus("ACTIVE");
+        a = activityRepository.save(a);
+
+        Variant v = new Variant();
+        v.setActivityId(a.getId());
+        v.setTitle("To Be Deleted Variant");
+        v.setCreatedBy(adminUser.getId());
+        v = variantRepository.save(v);
+
+        List<Variant> visible = variantRepository.findVisibleByActivity(a.getId());
+        assertThat(visible).extracting(Variant::getId).contains(v.getId());
+
+        v.setDeletedAt(Instant.now());
+        variantRepository.save(v);
+
+        List<Variant> visibleAfter = variantRepository.findVisibleByActivity(a.getId());
+        assertThat(visibleAfter).extracting(Variant::getId).doesNotContain(v.getId());
+
+        // Still findable by direct ID
+        Optional<Variant> direct = variantRepository.findById(v.getId());
+        assertThat(direct).isPresent();
+    }
+
+    // ---- T1.10 ----
+    @Test
+    @DisplayName("T1.10 — Bookmark: variant-level bookmark persists and is found")
+    void bookmarkVariantLevel() {
+        Activity a = new Activity();
+        a.setTitle("Variant Bookmark Activity");
+        a.setCategoryId(category.getId());
+        a.setCreatedBy(adminUser.getId());
+        a = activityRepository.save(a);
+
+        Variant v = new Variant();
+        v.setActivityId(a.getId());
+        v.setTitle("Bookmarked Variant");
+        v.setCreatedBy(adminUser.getId());
+        v = variantRepository.save(v);
+
+        Bookmark b = new Bookmark();
+        b.setUserId(adminUser.getId());
+        b.setActivityId(a.getId());
+        b.setVariantId(v.getId());
+        bookmarkRepository.save(b);
+
+        List<Bookmark> bookmarks = bookmarkRepository.findByUserId(adminUser.getId());
+        assertThat(bookmarks).hasSize(1);
+        assertThat(bookmarks.get(0).getVariantId()).isEqualTo(v.getId());
+
+        Optional<Bookmark> found = bookmarkRepository.findByUserActivityVariant(
+                adminUser.getId(), a.getId(), v.getId());
+        assertThat(found).isPresent();
+    }
+
+    // ---- T1.11 ----
+    @Test
+    @DisplayName("T1.11 — Tag.searchByName: partial match, case-insensitive")
+    void tagSearchByName() {
+        com.lep.portal.catalog.Tag waterTag = new com.lep.portal.catalog.Tag();
+        waterTag.setSlug("water");
+        waterTag.setName("Вода");
+        waterTag.setCreatedBy(adminUser.getId());
+        tagRepository.save(waterTag);
+
+        com.lep.portal.catalog.Tag walkTag = new com.lep.portal.catalog.Tag();
+        walkTag.setSlug("walking");
+        walkTag.setName("Ходьба");
+        walkTag.setCreatedBy(adminUser.getId());
+        tagRepository.save(walkTag);
+
+        com.lep.portal.catalog.Tag bikeTag = new com.lep.portal.catalog.Tag();
+        bikeTag.setSlug("cycling");
+        bikeTag.setName("Велоспорт");
+        bikeTag.setCreatedBy(adminUser.getId());
+        tagRepository.save(bikeTag);
+
+        List<com.lep.portal.catalog.Tag> waterResults = tagRepository.searchByName("вод");
+        assertThat(waterResults).hasSize(1);
+        assertThat(waterResults.get(0).getName()).isEqualTo("Вода");
+
+        List<com.lep.portal.catalog.Tag> sportResults = tagRepository.searchByName("спорт");
+        assertThat(sportResults).hasSize(1);
+        assertThat(sportResults.get(0).getName()).isEqualTo("Велоспорт");
+
+        List<com.lep.portal.catalog.Tag> noResults = tagRepository.searchByName("xyz");
+        assertThat(noResults).isEmpty();
+    }
 }
