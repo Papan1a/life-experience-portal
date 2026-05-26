@@ -6,7 +6,7 @@
             <summary class="text-muted" style="cursor: pointer; color: var(--color-text-muted);">
                 ⚠ Сообщить о проблеме
             </summary>
-            <form hx-post="@{/reports}"
+            <form th:attr="hx-post=@{/reports}"
                   hx-target="#report-result"
                   hx-swap="innerHTML"
                   style="margin-top: 8px;">

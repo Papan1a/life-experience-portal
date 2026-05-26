@@ -1,7 +1,7 @@
 <!-- HTMX fragment: status buttons for activity/variant detail pages -->
 <th:block xmlns:th="http://www.thymeleaf.org">
 <div id="status-buttons" th:fragment="statusButtons(activityId, variantId, userExperience)">
-    <form hx-post="@{/experiences}"
+    <form th:attr="hx-post=@{/experiences}"
           hx-swap="outerHTML"
           hx-target="#status-buttons"
           class="flex gap-2 align-center mt-4"
@@ -10,22 +10,22 @@
         <input type="hidden" name="variantId" th:value="${variantId}"/>
 
         <button type="submit" name="status" value="INTERESTING"
-                th:classappend="${userExperience != null && userExperience.status == 'INTERESTING'} ? 'btn-primary' : 'btn-secondary'"
+                th:classappend="${userExperience != null && userExperience.status.name() == 'INTERESTING'} ? 'btn-primary' : 'btn-secondary'"
                 class="btn btn-small">
             ✨ Интересно
         </button>
         <button type="submit" name="status" value="WANT_TO_TRY"
-                th:classappend="${userExperience != null && userExperience.status == 'WANT_TO_TRY'} ? 'btn-primary' : 'btn-secondary'"
+                th:classappend="${userExperience != null && userExperience.status.name() == 'WANT_TO_TRY'} ? 'btn-primary' : 'btn-secondary'"
                 class="btn btn-small">
             🎯 Хочу попробовать
         </button>
         <button type="submit" name="status" value="TRIED"
-                th:classappend="${userExperience != null && userExperience.status == 'TRIED'} ? 'btn-primary' : 'btn-secondary'"
+                th:classappend="${userExperience != null && userExperience.status.name() == 'TRIED'} ? 'btn-primary' : 'btn-secondary'"
                 class="btn btn-small">
             ✅ Пробовал(а)
         </button>
         <button type="submit" name="status" value="WANT_REPEAT"
-                th:classappend="${userExperience != null && userExperience.status == 'WANT_REPEAT'} ? 'btn-primary' : 'btn-secondary'"
+                th:classappend="${userExperience != null && userExperience.status.name() == 'WANT_REPEAT'} ? 'btn-primary' : 'btn-secondary'"
                 class="btn btn-small">
             🔄 Хочу повторить
         </button>

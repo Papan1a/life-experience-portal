@@ -52,6 +52,10 @@
          padding:12px 20px; z-index:9999; font-size:0.9rem; box-shadow:0 2px 8px rgba(0,0,0,0.15);">
         ⚠️ Сессия истечёт через 1 минуту из-за бездействия.
     </div>
+    <div id="htmx-error" style="display:none; position:fixed; top:70px; right:16px;
+         background:#fee2e2; border:1px solid #dc2626; color:#991b1b; border-radius:8px;
+         padding:12px 20px; z-index:9999; font-size:0.9rem; max-width:400px;
+         box-shadow:0 2px 8px rgba(0,0,0,0.15);"></div>
     <nav class="nav-bar">
         <div class="nav-brand">
             <a href="/" class="nav-logo">LEP</a>
@@ -73,5 +77,35 @@
     <main layout:fragment="content">
         <!-- page content here -->
     </main>
+    <script>
+        // HTMX: inject CSRF token into every request
+        document.addEventListener('htmx:configRequest', function(event) {
+            const tokenMeta = document.querySelector('meta[name="_csrf"]');
+            const headerMeta = document.querySelector('meta[name="_csrf_header"]');
+            if (tokenMeta && headerMeta) {
+                event.detail.headers[headerMeta.getAttribute('content')] = tokenMeta.getAttribute('content');
+            }
+        });
+
+        // HTMX: show visible error on 403/401/500 etc.
+        document.addEventListener('htmx:responseError', function(event) {
+            const status = event.detail.xhr.status;
+            const errorBox = document.getElementById('htmx-error');
+            let message;
+            if (status === 403) {
+                message = 'Доступ запрещён. Возможно, сессия истекла — обновите страницу.';
+            } else if (status === 401) {
+                message = 'Требуется авторизация. Перенаправление на вход...';
+                setTimeout(function() { window.location.href = '/login'; }, 2000);
+            } else if (status >= 500) {
+                message = 'Ошибка сервера (' + status + '). Попробуйте позже.';
+            } else {
+                message = 'Запрос не выполнен (' + status + ').';
+            }
+            errorBox.textContent = '⚠️ ' + message;
+            errorBox.style.display = 'block';
+            setTimeout(function() { errorBox.style.display = 'none'; }, 5000);
+        });
+    </script>
 </body>
 </html>

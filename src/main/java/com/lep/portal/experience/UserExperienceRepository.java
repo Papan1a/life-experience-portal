@@ -26,7 +26,7 @@ public interface UserExperienceRepository extends CrudRepository<UserExperience,
 
     @Query("SELECT * FROM user_experiences WHERE user_id = :userId AND status = :status ORDER BY updated_at DESC")
     List<UserExperience> findByUserIdAndStatus(
-            @Param("userId") UUID userId, @Param("status") String status);
+            @Param("userId") UUID userId, @Param("status") ExperienceStatus status);
 
     @Modifying
     @Query("""

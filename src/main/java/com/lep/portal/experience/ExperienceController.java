@@ -26,6 +26,9 @@ public class ExperienceController {
     /**
      * HTMX endpoint: set/change/clear the user's experience status.
      * Returns the updated status buttons fragment.
+     * <p>
+     * Accepts status as string from form buttons and converts to {@link ExperienceStatus}.
+     * Empty string means clear (remove the record).
      */
     @PostMapping("/experiences")
     public String setStatus(@RequestParam UUID activityId,
@@ -34,7 +37,12 @@ public class ExperienceController {
                             @AuthenticationPrincipal PortalUserDetails principal,
                             Model model) {
 
-        experienceService.setStatus(principal.getUserId(), activityId, variantId, status);
+        ExperienceStatus experienceStatus = null;
+        if (status != null && !status.isBlank()) {
+            experienceStatus = ExperienceStatus.valueOf(status.trim().toUpperCase());
+        }
+
+        experienceService.setStatus(principal.getUserId(), activityId, variantId, experienceStatus);
 
         Optional<UserExperience> ux = userExperienceRepository
                 .findByUserActivityVariant(principal.getUserId(), activityId, variantId);

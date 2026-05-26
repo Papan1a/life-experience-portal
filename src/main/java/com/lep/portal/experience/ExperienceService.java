@@ -44,23 +44,21 @@ public class ExperienceService {
      *
      * @return the current (possibly null) UserExperience after the operation
      */
-    public UserExperience setStatus(UUID userId, UUID activityId, UUID variantId, String status) {
+    public UserExperience setStatus(UUID userId, UUID activityId, UUID variantId, ExperienceStatus status) {
         Optional<UserExperience> existing = userExperienceRepository
                 .findByUserActivityVariant(userId, activityId, variantId);
 
         // Clear: remove the record
-        if (status == null || status.isBlank()) {
+        if (status == null) {
             existing.ifPresent(ux -> userExperienceRepository
                     .deleteByUserActivityVariant(userId, activityId, variantId));
             return null;
         }
 
-        String normalizedStatus = status.trim().toUpperCase();
-
         if (existing.isPresent()) {
             // Update existing
             UserExperience ux = existing.get();
-            ux.setStatus(normalizedStatus);
+            ux.setStatus(status);
             return userExperienceRepository.save(ux);
         } else {
             // Create new
@@ -68,7 +66,7 @@ public class ExperienceService {
             ux.setUserId(userId);
             ux.setActivityId(activityId);
             ux.setVariantId(variantId);
-            ux.setStatus(normalizedStatus);
+            ux.setStatus(status);
             return userExperienceRepository.save(ux);
         }
     }
@@ -131,32 +129,34 @@ public class ExperienceService {
         List<UserExperience> all = userExperienceRepository.findByUserId(userId);
 
         // Define display order
-        List<String> displayOrder = List.of("INTERESTING", "WANT_TO_TRY", "TRIED", "WANT_REPEAT");
-        Map<String, List<UserExperience>> grouped = new LinkedHashMap<>();
+        List<ExperienceStatus> displayOrder = List.of(
+                ExperienceStatus.INTERESTING, ExperienceStatus.WANT_TO_TRY,
+                ExperienceStatus.TRIED, ExperienceStatus.WANT_REPEAT);
+        Map<ExperienceStatus, List<UserExperience>> grouped = new LinkedHashMap<>();
 
         // Initialize ordered buckets
-        for (String status : displayOrder) {
+        for (ExperienceStatus status : displayOrder) {
             grouped.put(status, new ArrayList<>());
         }
 
         // Distribute
         for (UserExperience ux : all) {
-            String key = ux.getStatus() != null ? ux.getStatus() : "INTERESTING";
+            ExperienceStatus key = ux.getStatus() != null ? ux.getStatus() : ExperienceStatus.INTERESTING;
             grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(ux);
         }
 
-        // Remove empty buckets (but keep the order)
+        // Remove empty buckets (but keep the order), key as name() for Thymeleaf
         Map<String, List<UserExperience>> result = new LinkedHashMap<>();
-        for (String status : displayOrder) {
+        for (ExperienceStatus status : displayOrder) {
             List<UserExperience> list = grouped.get(status);
             if (list != null && !list.isEmpty()) {
-                result.put(status, list);
+                result.put(status.name(), list);
             }
         }
         // Add any non-standard statuses at the end
         for (var entry : grouped.entrySet()) {
             if (!displayOrder.contains(entry.getKey()) && !entry.getValue().isEmpty()) {
-                result.put(entry.getKey(), entry.getValue());
+                result.put(entry.getKey().name(), entry.getValue());
             }
         }
 
@@ -166,14 +166,25 @@ public class ExperienceService {
     /**
      * Returns the status label in Russian for display.
      */
-    public static String statusLabel(String status) {
+    public static String statusLabel(ExperienceStatus status) {
         if (status == null) return "—";
         return switch (status) {
+            case INTERESTING -> "Интересно";
+            case WANT_TO_TRY -> "Хочу попробовать";
+            case TRIED -> "Пробовал(а)";
+            case WANT_REPEAT -> "Хочу повторить";
+        };
+    }
+
+    /** Overload for Thymeleaf calls with string keys from getMyExperiences / getProfileExperiences. */
+    public static String statusLabel(String statusName) {
+        if (statusName == null) return "—";
+        return switch (statusName) {
             case "INTERESTING" -> "Интересно";
             case "WANT_TO_TRY" -> "Хочу попробовать";
             case "TRIED" -> "Пробовал(а)";
             case "WANT_REPEAT" -> "Хочу повторить";
-            default -> status;
+            default -> statusName;
         };
     }
 
@@ -196,7 +207,7 @@ public class ExperienceService {
 
             result.add(new FriendActivityDTO(
                     displayName,
-                    ux.getStatus(),
+                    ux.getStatus() != null ? ux.getStatus().name() : null,
                     activity.getTitle(),
                     ux.getActivityId(),
                     ux.getVariantId()));
@@ -213,10 +224,12 @@ public class ExperienceService {
     public Map<String, List<ProfileExperienceItem>> getProfileExperiences(UUID userId) {
         List<UserExperience> all = userExperienceRepository.findByUserId(userId);
 
-        List<String> displayOrder = List.of("INTERESTING", "WANT_TO_TRY", "TRIED", "WANT_REPEAT");
-        Map<String, List<ProfileExperienceItem>> grouped = new LinkedHashMap<>();
+        List<ExperienceStatus> displayOrder = List.of(
+                ExperienceStatus.INTERESTING, ExperienceStatus.WANT_TO_TRY,
+                ExperienceStatus.TRIED, ExperienceStatus.WANT_REPEAT);
+        Map<ExperienceStatus, List<ProfileExperienceItem>> grouped = new LinkedHashMap<>();
 
-        for (String status : displayOrder) {
+        for (ExperienceStatus status : displayOrder) {
             grouped.put(status, new ArrayList<>());
         }
 
@@ -232,24 +245,24 @@ public class ExperienceService {
                 }
             }
 
-            String key = ux.getStatus() != null ? ux.getStatus() : "INTERESTING";
+            ExperienceStatus key = ux.getStatus() != null ? ux.getStatus() : ExperienceStatus.INTERESTING;
             grouped.computeIfAbsent(key, k -> new ArrayList<>())
                     .add(new ProfileExperienceItem(
                             ux, activity.getTitle(), variantTitle,
                             ux.getActivityId(), ux.getVariantId()));
         }
 
-        // Remove empty buckets
+        // Remove empty buckets, key as name() for Thymeleaf
         Map<String, List<ProfileExperienceItem>> result = new LinkedHashMap<>();
-        for (String status : displayOrder) {
+        for (ExperienceStatus status : displayOrder) {
             List<ProfileExperienceItem> list = grouped.get(status);
             if (list != null && !list.isEmpty()) {
-                result.put(status, list);
+                result.put(status.name(), list);
             }
         }
         for (var entry : grouped.entrySet()) {
             if (!displayOrder.contains(entry.getKey()) && !entry.getValue().isEmpty()) {
-                result.put(entry.getKey(), entry.getValue());
+                result.put(entry.getKey().name(), entry.getValue());
             }
         }
 

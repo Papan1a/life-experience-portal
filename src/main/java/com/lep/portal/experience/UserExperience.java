@@ -23,7 +23,7 @@ public class UserExperience extends BaseAggregate {
     private UUID variantId;
 
     @Column("status")
-    private String status;
+    private ExperienceStatus status;
 
     @Column("note")
     private String note;
@@ -48,8 +48,8 @@ public class UserExperience extends BaseAggregate {
     public UUID getVariantId() { return variantId; }
     public void setVariantId(UUID variantId) { this.variantId = variantId; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public ExperienceStatus getStatus() { return status; }
+    public void setStatus(ExperienceStatus status) { this.status = status; }
 
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }

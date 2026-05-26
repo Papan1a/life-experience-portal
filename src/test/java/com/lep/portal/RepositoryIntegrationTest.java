@@ -29,6 +29,7 @@ import com.lep.portal.catalog.Variant;
 import com.lep.portal.catalog.VariantRepository;
 import com.lep.portal.experience.Bookmark;
 import com.lep.portal.experience.BookmarkRepository;
+import com.lep.portal.experience.ExperienceStatus;
 import com.lep.portal.experience.UserExperience;
 import com.lep.portal.experience.UserExperienceRepository;
 import com.lep.portal.invite.InviteRepository;
@@ -176,14 +177,14 @@ public class RepositoryIntegrationTest {
         uxActivity.setUserId(adminUser.getId());
         uxActivity.setActivityId(a.getId());
         uxActivity.setVariantId(null);
-        uxActivity.setStatus("WANT_TO_TRY");
+        uxActivity.setStatus(ExperienceStatus.WANT_TO_TRY);
         userExperienceRepository.save(uxActivity);
 
         UserExperience uxVariant = new UserExperience();
         uxVariant.setUserId(adminUser.getId());
         uxVariant.setActivityId(a.getId());
         uxVariant.setVariantId(v.getId());
-        uxVariant.setStatus("TRIED");
+        uxVariant.setStatus(ExperienceStatus.TRIED);
         userExperienceRepository.save(uxVariant);
 
         List<UserExperience> all = userExperienceRepository.findByUserId(adminUser.getId());
@@ -204,14 +205,14 @@ public class RepositoryIntegrationTest {
         ux1.setUserId(adminUser.getId());
         ux1.setActivityId(a.getId());
         ux1.setVariantId(null);
-        ux1.setStatus("WANT_TO_TRY");
+        ux1.setStatus(ExperienceStatus.WANT_TO_TRY);
         userExperienceRepository.save(ux1);
 
         UserExperience ux2 = new UserExperience();
         ux2.setUserId(adminUser.getId());
         ux2.setActivityId(a.getId());
         ux2.setVariantId(null);
-        ux2.setStatus("INTERESTING");
+        ux2.setStatus(ExperienceStatus.INTERESTING);
 
         assertThatThrownBy(() -> userExperienceRepository.save(ux2))
                 .hasCauseInstanceOf(DataIntegrityViolationException.class);
