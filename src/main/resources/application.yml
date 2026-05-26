@@ -69,3 +69,25 @@ logging:
   level:
     org.springframework.jdbc.core: INFO    # quiet down in tests
     org.flywaydb: INFO
+
+---
+# Dev profile: seeds demo data (users, invite, activities) for local development.
+# Activated via SPRING_PROFILES_ACTIVE=dev in docker-compose or IDE run config.
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    hikari:
+      max-lifetime: 120000          # 2 min (shorter than default for dev restarts)
+      idle-timeout: 60000           # 1 min
+      keepalive-time: 30000         # 30 sec
+      validation-timeout: 5000      # 5 sec
+
+app:
+  dev-seed:
+    enabled: true
+
+logging:
+  level:
+    com.lep.portal.config.DevSeedRunner: INFO

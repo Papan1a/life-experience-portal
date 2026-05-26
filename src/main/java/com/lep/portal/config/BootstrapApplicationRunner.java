@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
  * Otherwise, logs a clear instruction for manual admin creation via Adminer.
  */
 @Component
+@Order(1)
 public class BootstrapApplicationRunner implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(BootstrapApplicationRunner.class);
