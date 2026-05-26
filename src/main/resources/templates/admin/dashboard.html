@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{_layout}">
+<head>
+    <title>Админ-панель</title>
+</head>
+<body>
+<main layout:fragment="content" class="app-layout">
+
+    <h1 class="page-title">Админ-панель</h1>
+
+    <!-- Flash messages -->
+    <div th:if="${success}" class="alert alert-success mb-4" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-error mb-4" th:text="${error}"></div>
+    <div th:if="${reportsMessage}" class="alert alert-info mb-4" th:text="${reportsMessage}"></div>
+
+    <!-- ===== Активности ===== -->
+    <div class="card mb-4">
+        <h2 style="font-size: 1.2rem; margin-bottom: 16px;">Активности</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="text-align: left; border-bottom: 2px solid var(--color-border);">
+                    <th style="padding: 8px;">Название</th>
+                    <th style="padding: 8px;">Статус</th>
+                    <th style="padding: 8px;">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="a : ${allActivities}" style="border-bottom: 1px solid var(--color-border);">
+                    <td style="padding: 8px;" th:text="${a.title}">Название</td>
+                    <td style="padding: 8px;">
+                        <span th:classappend="'badge badge-' + (${a.status} == 'ACTIVE' ? 'active' : (${a.status} == 'BLOCKED' ? 'expired' : ''))"
+                              th:text="${a.status}">ACTIVE</span>
+                    </td>
+                    <td style="padding: 8px;">
+                        <div class="flex gap-1">
+                            <form th:action="@{/admin/activities/{id}/archive(id=${a.id})}" method="post" style="display:inline;">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <button type="submit" class="btn btn-secondary btn-small"
+                                        th:disabled="${a.status == 'ARCHIVED' || a.status == 'BLOCKED'}">
+                                    Архив
+                                </button>
+                            </form>
+                            <form th:action="@{/admin/activities/{id}/block(id=${a.id})}" method="post" style="display:inline;">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <button type="submit" class="btn btn-secondary btn-small"
+                                        th:disabled="${a.status == 'BLOCKED'}"
+                                        style="color: var(--color-error);">
+                                    Блок
+                                </button>
+                            </form>
+                            <form th:action="@{/admin/activities/{id}/activate(id=${a.id})}" method="post" style="display:inline;">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <button type="submit" class="btn btn-secondary btn-small"
+                                        th:disabled="${a.status == 'ACTIVE'}">
+                                    Акт.
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ===== Варианты ===== -->
+    <div class="card mb-4">
+        <h2 style="font-size: 1.2rem; margin-bottom: 16px;">Варианты</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="text-align: left; border-bottom: 2px solid var(--color-border);">
+                    <th style="padding: 8px;">Название</th>
+                    <th style="padding: 8px;">Статус</th>
+                    <th style="padding: 8px;">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="v : ${allVariants}" style="border-bottom: 1px solid var(--color-border);">
+                    <td style="padding: 8px;" th:text="${v.title}">Название</td>
+                    <td style="padding: 8px;">
+                        <span th:classappend="'badge badge-' + (${v.status} == 'ACTIVE' ? 'active' : 'expired')"
+                              th:text="${v.status}">ACTIVE</span>
+                    </td>
+                    <td style="padding: 8px;">
+                        <form th:action="@{/admin/variants/{id}/archive(id=${v.id})}" method="post" style="display:inline;">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <button type="submit" class="btn btn-secondary btn-small"
+                                    th:disabled="${v.status == 'ARCHIVED'}">
+                                Архив
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ===== Теги ===== -->
+    <div class="card mb-4">
+        <h2 style="font-size: 1.2rem; margin-bottom: 16px;">Теги</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="text-align: left; border-bottom: 2px solid var(--color-border);">
+                    <th style="padding: 8px;">Название</th>
+                    <th style="padding: 8px;">Slug</th>
+                    <th style="padding: 8px;">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="t : ${allTags}" style="border-bottom: 1px solid var(--color-border);">
+                    <td style="padding: 8px;" th:text="${t.name}">Название</td>
+                    <td style="padding: 8px;" class="text-muted" th:text="${t.slug}">slug</td>
+                    <td style="padding: 8px;">
+                        <form th:action="@{/admin/tags/{id}/rename(id=${t.id})}" method="post"
+                              class="flex gap-1 align-center" style="display:flex;">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <input type="text" name="name" th:value="${t.name}"
+                                   style="width: 120px; padding: 4px 8px; font-size: 0.85rem;">
+                            <button type="submit" class="btn btn-secondary btn-small">Переим.</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</main>
+</body>
+</html>

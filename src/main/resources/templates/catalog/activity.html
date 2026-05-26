@@ -58,6 +58,8 @@
             <div th:replace="~{experience/_bookmark_button :: bookmarkButton(${activity.id}, null, ${bookmark})}">
                 <!-- Bookmark button rendered by HTMX fragment -->
             </div>
+            <div th:replace="~{catalog/_report_button :: reportButton('activity', ${activity.id})}">
+            </div>
         </div>
     </div>
 

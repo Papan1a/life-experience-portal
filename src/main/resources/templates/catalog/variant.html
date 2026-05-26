@@ -46,6 +46,8 @@
             <div th:replace="~{experience/_bookmark_button :: bookmarkButton(${activity.id}, ${variant.id}, ${bookmark})}">
                 <!-- Bookmark button rendered by HTMX fragment -->
             </div>
+            <div th:replace="~{catalog/_report_button :: reportButton('variant', ${variant.id})}">
+            </div>
         </div>
     </div>
 

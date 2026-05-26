@@ -567,54 +567,62 @@ T6.8 — POST /profile → display_name и bio обновлены в БД
 
 ---
 
-## БЛОК 7 — Admin-функции
+## БЛОК 7 — Admin-функции ✅
 
 **Цель:** пользователь с `is_admin=true` может модерировать контент.
 
-### Шаги
+### Реализованные компоненты
 
-**7.1 — AdminController** (все маршруты под `@PreAuthorize("hasRole('ADMIN')")`)
+**7.1 — AdminController** (`src/main/java/com/lep/portal/admin/AdminController.java`)
+- `@PreAuthorize("hasRole('ADMIN')")` на уровне класса
+- Инжектирует `ActivityRepository`, `VariantRepository`, `TagRepository`
+- `GET /admin` → `admin/dashboard.html` с тремя таблицами: активности, варианты, теги
+- `POST /admin/activities/{id}/archive` → `status=ARCHIVED`
+- `POST /admin/activities/{id}/block` → `status=BLOCKED`
+- `POST /admin/activities/{id}/activate` → `status=ACTIVE` (из ARCHIVED/BLOCKED)
+- `POST /admin/variants/{id}/archive` → `status=ARCHIVED`
+- `POST /admin/tags/{id}/rename` → обновляет `name` и `slug` (нормализация: lowercase + замена спецсимволов на `_` + trim)
+- `GET /admin/reports` → заглушка с `reportsMessage` (функция отчётов в следующей версии)
 
-`POST /admin/activities/{id}/archive` → `status=ARCHIVED`
-`POST /admin/activities/{id}/block` → `status=BLOCKED`
-`POST /admin/activities/{id}/activate` → `status=ACTIVE` (из ARCHIVED)
-`POST /admin/variants/{id}/archive` → аналогично
-`POST /admin/tags/{id}/rename` → обновить `name` и `slug` (нормализовать)
-`GET /admin/reports` → список последних отчётов (если будет Report entity — зарезервировано; сейчас просто заглушка 200)
+**7.2 — ReportController** (`src/main/java/com/lep/portal/admin/ReportController.java`)
+- `@RestController` (не `@Controller`)
+- `POST /reports` — принимает `target_type` (activity/variant), `target_id`, `reason` (валидация против Set: duplicate/unsafe/spam/wrong_category/bad_description/other), опционально `comment`
+- Логирует через `log.warn("REPORT: user=... target_type=... target_id=... reason=... comment=...")`
+- Возвращает `ResponseEntity<String>` — текст ответа, не HTML (для HTMX)
 
-**7.2 — Report button**
-На страницах активити и варианта добавь кнопку "Сообщить о проблеме":
-`POST /reports` → принимает `target_type` (activity/variant), `target_id`, `reason` (enum: duplicate/unsafe/spam/wrong_category/bad_description/other), опционально `comment`
-В MVP: логировать в application log (`log.warn("REPORT: ...")`). Не сохранять в БД.
+**7.3 — Шаблоны:**
+- `templates/admin/dashboard.html` — 3 таблицы с формами archive/block/activate (кнопки с `disabled` для недопустимых переходов), inline rename для тегов, flash-сообщения
+- `templates/catalog/_report_button.html` — HTMX-фрагмент с `<details>` раскрывающимся блоком, select причины, опциональный comment, `hx-post="/reports"`, `hx-target="#report-result"`
+- `templates/catalog/activity.html` — добавлен `<div th:replace="~{catalog/_report_button :: reportButton('activity', ${activity.id})}">` после статус/закладок
+- `templates/catalog/variant.html` — добавлен `<div th:replace="~{catalog/_report_button :: reportButton('variant', ${variant.id})}">` после статус/закладок
+- `templates/_layout.html` — добавлен `xmlns:sec="http://www.thymeleaf.org/extras/spring-security"` и `<a sec:authorize="hasRole('ADMIN')" href="/admin">Админ</a>`
 
-**7.3 — Admin UI** (минимальный)
-`GET /admin` → список активностей со статусами и кнопками архивации/блокировки
-Доступно только `is_admin=true`.
-
-### Шаблоны (RU)
-- `templates/admin/dashboard.html`
-- `templates/catalog/_report_button.html` — HTMX-фрагмент
+**7.4 — Тесты:** `AdminIntegrationTest.java` (8 тестов)
 
 ### Проверки блока 7
 
 ```
-T7.1 — GET /admin (is_admin=true) → 200
+T7.1 — GET /admin (is_admin=true) → 200, содержит "Админ-панель"
 T7.2 — GET /admin (обычный пользователь) → 403
-T7.3 — POST /admin/activities/{id}/archive → status=ARCHIVED, активити не видна в каталоге
-T7.4 — POST /admin/activities/{id}/activate → status=ACTIVE, снова видна
-T7.5 — POST /admin/activities/{id}/block → status=BLOCKED, не видна
-T7.6 — POST /reports с валидными данными → 200 или redirect, запись в логах
-T7.7 — POST /admin/tags/{id}/rename → slug нормализован
-T7.8 — Дочерние варианты архивированной активити не видны в каталоге (без изменения их status)
+T7.3 — POST /admin/activities/{id}/archive → status=ARCHIVED, не видна в visible_activities
+T7.4 — POST /admin/activities/{id}/activate → status=ACTIVE, видна в visible_activities
+T7.5 — POST /admin/activities/{id}/block → status=BLOCKED, не видна в visible_activities
+T7.6 — POST /reports с валидными данными → 200 "Спасибо"; невалидный reason → 400
+T7.7 — POST /admin/tags/{id}/rename → slug нормализован (проверка в БД: name="Новое ИМЯ!!!", slug="новое_имя")
+T7.8 — Дочерние варианты архивированной активити не видны в visible_variants (status варианта остаётся ACTIVE)
 ```
 
 ```bash
 ./mvnw test -Dtest=AdminIntegrationTest
-# Ожидание: Tests run: 8, Failures: 0, Errors: 0
+# Результат: Tests run: 8, Failures: 0, Errors: 0 ✅
 ```
 
-**Если T7.8 падает** → проверь `visible_variants` вьюху: она JOIN-ится с `activities` и проверяет статус обеих.
-**После 3 попыток** → СТОП.
+**Особенности реализации:**
+- `R2Config` использует `@ConditionalOnExpression` — при отсутствии `r2.endpoint` бин `S3Client` не создаётся. В тестах `@MockBean S3Client` для изоляции.
+- Admin-пользователь создаётся через `userRepository.save()` с `setAdmin(true)`, затем логин через `formLogin()`.
+- `visible_variants` вьюха (из V1__init.sql) JOIN-ит `variants` с `activities` и проверяет статус обеих — T7.8 валидирует это поведение.
+- `normalizeSlug()`: lowercase → `replaceAll("[^a-zа-яё0-9]+", "_")` → trim leading/trailing `_`.
+- `@MockBean` deprecation warning безопасен (Spring Boot 3.4.x).
 
 ---
 
