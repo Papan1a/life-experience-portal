@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{_layout}">
+<head>
+    <title>Редактировать профиль</title>
+</head>
+<body>
+<main layout:fragment="content" class="app-layout">
+
+    <h1 class="page-title">Редактировать профиль</h1>
+
+    <!-- Success/error messages -->
+    <div th:if="${success}" class="alert alert-success mb-4" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-error mb-4" th:text="${error}"></div>
+
+    <div class="card mb-4">
+        <form th:action="@{/profile}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+            <div class="form-group">
+                <label for="displayName">Имя</label>
+                <input type="text" id="displayName" name="displayName"
+                       th:value="${user.displayName}" required
+                       class="form-control" maxlength="100">
+            </div>
+
+            <div class="form-group mt-3">
+                <label for="bio">О себе</label>
+                <textarea id="bio" name="bio" rows="4" class="form-control"
+                          maxlength="500" th:text="${user.bio}"></textarea>
+            </div>
+
+            <div class="flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <a href="/profile" class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Avatar upload -->
+    <div class="card">
+        <h2 style="font-size: 1.1rem; margin-bottom: 16px;">Аватар</h2>
+
+        <div class="flex gap-4 align-center mb-4">
+            <img th:src="${user.avatarUrl} ?: @{/images/default-avatar.svg}"
+                 alt="Текущий аватар" width="96" height="96"
+                 style="border-radius: 50%; object-fit: cover;">
+            <span class="text-muted" style="font-size: 0.85rem;">JPEG или PNG, макс. 2 MB</span>
+        </div>
+
+        <form th:action="@{/profile/avatar}" method="post"
+              enctype="multipart/form-data">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+            <div class="form-group">
+                <input type="file" name="avatar" accept="image/jpeg,image/png"
+                       class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">Загрузить аватар</button>
+        </form>
+    </div>
+
+</main>
+</body>
+</html>

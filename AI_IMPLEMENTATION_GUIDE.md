@@ -543,14 +543,14 @@ T5.8 — GET /saved другого пользователя → недоступ
 ### Проверки блока 6
 
 ```
-T6.1 — GET /users/{id} (авторизован) → 200, данные профиля
+T6.1 — GET /users/{id} (авторизован) → 200, содержит displayName и bio
 T6.2 — GET /users/{id} (не авторизован) → redirect /login
-T6.3 — GET /users?q=alex (HTMX) → список пользователей
-T6.4 — GET / содержит Friends-секцию с записями других пользователей
+T6.3 — GET /users/search?q=Профиль (HTMX) → список с совпадением, без несовпадений
+T6.4 — GET / содержит Friends-секцию "Что делают другие" с чужими записями
 T6.5 — Friends-секция не содержит записей текущего пользователя
-T6.6 — POST /users/me/avatar с валидным JPEG → avatar_url обновлён в БД
-T6.7 — POST /users/me/avatar с файлом > 2MB → ошибка
-T6.8 — POST /users/me → display_name обновлён
+T6.6 — POST /profile/avatar с валидным JPEG (MockBean S3Client) → avatar_url обновлён
+T6.7 — POST /profile/avatar с файлом > 2 MB → ошибка, avatar_url не обновлён
+T6.8 — POST /profile → display_name и bio обновлены в БД
 ```
 
 ```bash
@@ -558,7 +558,11 @@ T6.8 — POST /users/me → display_name обновлён
 # Ожидание: Tests run: 8, Failures: 0, Errors: 0
 ```
 
-**Если T6.6 падает** → проверь конфигурацию R2Config (endpoint, credentials). В тестах мокируй S3Client.
+**Особенности реализации:**
+- S3Client в UserProfileController — `@Autowired(required = false)`, с проверкой на null
+- В тестах используется `@MockBean S3Client` для изоляции от R2
+- INSERT в activities требует `category_id` (NOT NULL) — используется подзапрос `(SELECT id FROM categories WHERE slug='sport')`
+- `@MockBean` deprecation warning безопасен (Spring Boot 3.4.x), в будущем заменить на `@MockitoBean`
 **После 3 попыток** → СТОП.
 
 ---

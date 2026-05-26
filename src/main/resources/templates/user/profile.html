@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{_layout}">
+<head>
+    <title th:text="'Профиль — ' + ${profileUser.displayName}">Профиль</title>
+</head>
+<body>
+<main layout:fragment="content" class="app-layout">
+
+    <h1 class="page-title" th:text="${profileUser.displayName}">Имя пользователя</h1>
+
+    <div class="card">
+        <div class="flex gap-4 align-start">
+            <!-- Avatar -->
+            <div class="profile-avatar">
+                <img th:src="${profileUser.avatarUrl} ?: @{/images/default-avatar.svg}"
+                     alt="Аватар" width="128" height="128"
+                     style="border-radius: 50%; object-fit: cover;">
+            </div>
+
+            <!-- Bio -->
+            <div style="flex: 1;">
+                <p th:if="${profileUser.bio}" th:text="${profileUser.bio}"
+                   style="font-size: 1.05rem; line-height: 1.5;"></p>
+                <p th:unless="${profileUser.bio}" class="text-muted">Био не заполнено</p>
+            </div>
+        </div>
+
+        <!-- Edit button (own profile only) -->
+        <div th:if="${isOwnProfile}" class="mt-4">
+            <a href="/profile/edit" class="btn btn-secondary">Редактировать профиль</a>
+        </div>
+    </div>
+
+    <!-- Experience lists grouped by status -->
+    <div th:each="statusKey : ${experiences.keySet()}" class="card mt-4">
+        <h2 th:text="${T(com.lep.portal.experience.ExperienceService).statusLabel(statusKey)}"
+            style="font-size: 1.1rem; margin-bottom: 16px;">
+            Статус
+        </h2>
+
+        <div th:each="item : ${experiences.get(statusKey)}"
+             class="flex justify-between align-center mb-3"
+             style="padding-bottom: 8px; border-bottom: 1px solid var(--color-border);">
+
+            <div>
+                <a th:href="@{/activities/{id}(id=${item.activityId})}"
+                   th:text="${item.activityTitle}"
+                   style="font-weight: 500; color: var(--color-text); text-decoration: none;">
+                    Название активности
+                </a>
+                <th:block th:if="${item.variantTitle != null}">
+                    <span class="text-muted" style="margin: 0 4px;">→</span>
+                    <a th:href="@{/activities/{aid}/variants/{vid}(aid=${item.activityId},vid=${item.variantId})}"
+                       th:text="${item.variantTitle}"
+                       style="font-weight: 400; color: var(--color-text-muted); text-decoration: none;">
+                        Название варианта
+                    </a>
+                </th:block>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty state -->
+    <div th:if="${experiences.isEmpty()}" class="card text-center text-muted mt-4">
+        <p>Пользователь пока не отметил ни одной активности.</p>
+    </div>
+
+</main>
+</body>
+</html>

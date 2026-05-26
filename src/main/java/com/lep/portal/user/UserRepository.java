@@ -17,4 +17,7 @@ public interface UserRepository extends CrudRepository<User, UUID> {
 
     @Query("SELECT COUNT(*) > 0 FROM users WHERE email = :email AND deleted_at IS NULL")
     boolean emailExists(@Param("email") String email);
+
+    @Query("SELECT * FROM users WHERE deleted_at IS NULL AND display_name ILIKE '%' || :query || '%' ORDER BY display_name LIMIT 20")
+    java.util.List<User> searchByDisplayName(@Param("query") String query);
 }

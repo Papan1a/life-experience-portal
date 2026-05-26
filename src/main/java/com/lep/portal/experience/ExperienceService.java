@@ -14,6 +14,7 @@ import com.lep.portal.catalog.Activity;
 import com.lep.portal.catalog.ActivityRepository;
 import com.lep.portal.catalog.Variant;
 import com.lep.portal.catalog.VariantRepository;
+import com.lep.portal.user.UserRepository;
 
 @Service
 @Transactional
@@ -23,15 +24,18 @@ public class ExperienceService {
     private final BookmarkRepository bookmarkRepository;
     private final ActivityRepository activityRepository;
     private final VariantRepository variantRepository;
+    private final UserRepository userRepository;
 
     public ExperienceService(UserExperienceRepository userExperienceRepository,
                              BookmarkRepository bookmarkRepository,
                              ActivityRepository activityRepository,
-                             VariantRepository variantRepository) {
+                             VariantRepository variantRepository,
+                             UserRepository userRepository) {
         this.userExperienceRepository = userExperienceRepository;
         this.bookmarkRepository = bookmarkRepository;
         this.activityRepository = activityRepository;
         this.variantRepository = variantRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -171,5 +175,84 @@ public class ExperienceService {
             case "WANT_REPEAT" -> "Хочу повторить";
             default -> status;
         };
+    }
+
+    /**
+     * Returns recent experience entries from other users (excludes current user),
+     * joined with user display_name and activity title, for the Friends section
+     * on the main page. Limited to 20 entries.
+     */
+    @Transactional(readOnly = true)
+    public List<FriendActivityDTO> getFriendsActivity(UUID excludeUserId) {
+        List<UserExperience> recent = userExperienceRepository.findRecentOtherUsers(excludeUserId, 20);
+        List<FriendActivityDTO> result = new ArrayList<>();
+
+        for (UserExperience ux : recent) {
+            Activity activity = activityRepository.findById(ux.getActivityId()).orElse(null);
+            if (activity == null) continue;
+
+            String displayName = userRepository.findActiveById(ux.getUserId())
+                    .map(u -> u.getDisplayName()).orElse("Пользователь");
+
+            result.add(new FriendActivityDTO(
+                    displayName,
+                    ux.getStatus(),
+                    activity.getTitle(),
+                    ux.getActivityId(),
+                    ux.getVariantId()));
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns experiences for a given user, grouped by status, with activity/variant titles
+     * joined in ProfileExperienceItem DTOs. Only visible content (through views).
+     */
+    @Transactional(readOnly = true)
+    public Map<String, List<ProfileExperienceItem>> getProfileExperiences(UUID userId) {
+        List<UserExperience> all = userExperienceRepository.findByUserId(userId);
+
+        List<String> displayOrder = List.of("INTERESTING", "WANT_TO_TRY", "TRIED", "WANT_REPEAT");
+        Map<String, List<ProfileExperienceItem>> grouped = new LinkedHashMap<>();
+
+        for (String status : displayOrder) {
+            grouped.put(status, new ArrayList<>());
+        }
+
+        for (UserExperience ux : all) {
+            Activity activity = activityRepository.findById(ux.getActivityId()).orElse(null);
+            if (activity == null) continue;
+
+            String variantTitle = null;
+            if (ux.getVariantId() != null) {
+                Variant variant = variantRepository.findById(ux.getVariantId()).orElse(null);
+                if (variant != null) {
+                    variantTitle = variant.getTitle();
+                }
+            }
+
+            String key = ux.getStatus() != null ? ux.getStatus() : "INTERESTING";
+            grouped.computeIfAbsent(key, k -> new ArrayList<>())
+                    .add(new ProfileExperienceItem(
+                            ux, activity.getTitle(), variantTitle,
+                            ux.getActivityId(), ux.getVariantId()));
+        }
+
+        // Remove empty buckets
+        Map<String, List<ProfileExperienceItem>> result = new LinkedHashMap<>();
+        for (String status : displayOrder) {
+            List<ProfileExperienceItem> list = grouped.get(status);
+            if (list != null && !list.isEmpty()) {
+                result.put(status, list);
+            }
+        }
+        for (var entry : grouped.entrySet()) {
+            if (!displayOrder.contains(entry.getKey()) && !entry.getValue().isEmpty()) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return result;
     }
 }

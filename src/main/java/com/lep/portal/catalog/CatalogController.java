@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,14 +12,20 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.lep.portal.catalog.CatalogService.CatalogPage;
+import com.lep.portal.experience.ExperienceService;
+import com.lep.portal.experience.FriendActivityDTO;
+import com.lep.portal.user.PortalUserDetails;
 
 @Controller
 public class CatalogController {
 
     private final CatalogService catalogService;
+    private final ExperienceService experienceService;
 
-    public CatalogController(CatalogService catalogService) {
+    public CatalogController(CatalogService catalogService,
+                             ExperienceService experienceService) {
         this.catalogService = catalogService;
+        this.experienceService = experienceService;
     }
 
     /**
@@ -31,6 +38,7 @@ public class CatalogController {
                           @RequestParam(required = false) String tags,
                           @RequestParam(defaultValue = "1") int page,
                           @RequestHeader(value = "HX-Request", required = false) String hxRequest,
+                          @AuthenticationPrincipal PortalUserDetails principal,
                           Model model) {
 
         List<String> tagSlugs = (tags != null && !tags.isBlank())
@@ -43,6 +51,11 @@ public class CatalogController {
         model.addAttribute("page", catalogPage);
         model.addAttribute("currentCategory", category);
         model.addAttribute("currentTags", tags);
+
+        // Friends activity section
+        java.util.List<FriendActivityDTO> friendsActivity =
+                experienceService.getFriendsActivity(principal.getUserId());
+        model.addAttribute("friendsActivity", friendsActivity);
 
         // HTMX: return content fragment only, no layout
         if ("true".equals(hxRequest)) {

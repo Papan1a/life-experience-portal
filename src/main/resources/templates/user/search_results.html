@@ -1,0 +1,19 @@
+<!-- HTMX fragment: user search results -->
+<th:block xmlns:th="http://www.thymeleaf.org">
+    <div id="user-search-results">
+        <th:block th:if="${users.isEmpty()}">
+            <p class="text-muted" style="padding: 12px;">
+                Пользователи не найдены по запросу "<span th:text="${query}"></span>".
+            </p>
+        </th:block>
+
+        <div th:each="user : ${users}" class="flex align-center gap-2 mb-3"
+             style="padding: 8px 0; border-bottom: 1px solid var(--color-border);">
+            <a th:href="@{/users/{id}(id=${user.id})}"
+               th:text="${user.displayName}"
+               style="font-weight: 500; color: var(--color-text); text-decoration: none;">
+                Имя
+            </a>
+        </div>
+    </div>
+</th:block>

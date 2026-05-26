@@ -31,6 +31,29 @@
         </div>
     </div>
 
+    <!-- ===== Friends-секция "Что делают другие" ===== -->
+    <div th:if="${!friendsActivity.isEmpty()}" class="card mb-4">
+        <h2 style="font-size: 1.1rem; margin-bottom: 12px;">Что делают другие</h2>
+        <div th:each="fa : ${friendsActivity}" class="mb-2"
+             style="padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: 0.9rem;">
+            <strong th:text="${fa.displayName()}">Имя</strong>
+            <span class="text-muted">
+                <th:block th:switch="${fa.status()}">
+                    <span th:case="'WANT_TO_TRY'">хочет попробовать</span>
+                    <span th:case="'TRIED'">пробовал(а)</span>
+                    <span th:case="'WANT_REPEAT'">хочет повторить</span>
+                    <span th:case="'INTERESTING'">интересуется</span>
+                    <span th:case="*">отметил(а)</span>
+                </th:block>
+            </span>
+            <a th:href="@{/activities/{id}(id=${fa.activityId()})}"
+               th:text="${fa.activityTitle()}"
+               style="color: var(--color-primary); text-decoration: none;">
+                активность
+            </a>
+        </div>
+    </div>
+
     <!-- ===== Список активностей (HTMX target) ===== -->
     <th:block th:fragment="catalog-content">
         <div id="catalog-results">
