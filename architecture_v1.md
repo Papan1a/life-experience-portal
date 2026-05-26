@@ -135,7 +135,7 @@ src/test/java/...         # repository (Testcontainers PG), service, web slice t
 1. `complexity_level` set — proposed `{low, medium, high}`; confirm.
 2. `estimated_duration` format — free text now; structure later if duration filtering is wanted.
 3. Soft-deleted email uniqueness — recommend a **partial unique** index on `email WHERE deleted_at IS NULL` to allow re-registration after account removal. (Currently global unique.)
-4. Brute-force lib — bucket4j vs hand-rolled attempt counter.
+4. ~~Brute-force lib — bucket4j vs hand-rolled attempt counter.~~ — зарезервировано (AI_IMPLEMENTATION_GUIDE.md §Зарезервировано). Bucket4j присутствует в `pom.xml`, реализация отложена до появления реальной нагрузки/атак.
 5. ~~`pg_uuidv7` image build~~ — resolved: PostgreSQL 18 has built-in `uuidv7()`. No extension build needed.
 6. Reverse proxy — Caddy (recommended) vs nginx.
 

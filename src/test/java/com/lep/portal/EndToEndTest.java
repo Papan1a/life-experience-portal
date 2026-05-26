@@ -49,6 +49,7 @@ import software.amazon.awssdk.services.s3.S3Client;
  * E2E.5 — Add to bookmarks
  * E2E.6 — Second user sees first user in Friends section
  * E2E.7 — Admin archives Activity → disappears from catalog
+ * E2E.8 — Set WANT_TO_TRY and toggle bookmark on Variant level
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
@@ -455,6 +456,79 @@ public class EndToEndTest {
         // Verify 404 when accessing directly
         mockMvc.perform(get("/activities/" + activityId).cookie(newUserSession))
                 .andExpect(status().isNotFound());
+    }
+
+    // ==================================================================
+    // E2E.8 — Set WANT_TO_TRY and toggle bookmark on Variant level
+    // ==================================================================
+
+    @Test
+    @Order(8)
+    @DisplayName("E2E.8 — Поставить WANT_TO_TRY и закладку на уровне Variant")
+    void variantLevelExperienceAndBookmark() throws Exception {
+        recreateE2E1AndE2State();
+
+        // Create variant first
+        String variantRedirect = mockMvc.perform(post("/activities/" + activityId + "/variants")
+                        .cookie(newUserSession)
+                        .with(csrf())
+                        .param("title", "Скалолазание с инструктором E2E8")
+                        .param("description", "С профессиональным гидом")
+                        .param("differenceReason", "Безопаснее для новичков"))
+                .andExpect(status().is3xxRedirection())
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+        UUID vId = UUID.fromString(variantRedirect.substring(variantRedirect.lastIndexOf('/') + 1));
+
+        // Set WANT_TO_TRY on variant level
+        mockMvc.perform(post("/experiences")
+                        .cookie(newUserSession)
+                        .with(csrf())
+                        .param("activityId", activityId.toString())
+                        .param("variantId", vId.toString())
+                        .param("status", "WANT_TO_TRY"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(
+                        org.hamcrest.Matchers.containsString("status-buttons")));
+
+        // Verify variant-level row persisted
+        Integer expCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM user_experiences WHERE user_id = ?::uuid AND variant_id = ?::uuid",
+                Integer.class, newUser.getId().toString(), vId.toString());
+        assertThat(expCount).isEqualTo(1);
+
+        // Toggle bookmark ON for the variant
+        mockMvc.perform(post("/bookmarks/toggle")
+                        .cookie(newUserSession)
+                        .with(csrf())
+                        .param("activityId", activityId.toString())
+                        .param("variantId", vId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(
+                        org.hamcrest.Matchers.containsString("Сохранено")));
+
+        // Verify variant-level bookmark exists
+        Integer bmCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM bookmarks WHERE user_id = ?::uuid AND variant_id = ?::uuid",
+                Integer.class, newUser.getId().toString(), vId.toString());
+        assertThat(bmCount).isEqualTo(1);
+
+        // Toggle bookmark OFF
+        mockMvc.perform(post("/bookmarks/toggle")
+                        .cookie(newUserSession)
+                        .with(csrf())
+                        .param("activityId", activityId.toString())
+                        .param("variantId", vId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(
+                        org.hamcrest.Matchers.containsString("Сохранить")));
+
+        // Verify bookmark removed
+        bmCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM bookmarks WHERE user_id = ?::uuid AND variant_id = ?::uuid",
+                Integer.class, newUser.getId().toString(), vId.toString());
+        assertThat(bmCount).isEqualTo(0);
     }
 
     // ==================================================================

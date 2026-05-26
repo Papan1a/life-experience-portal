@@ -37,6 +37,9 @@ public class UserProfileController {
     @Value("${r2.bucket:}")
     private String r2Bucket;
 
+    @Value("${r2.public-base-url:}")
+    private String r2PublicBaseUrl;
+
     @Value("${app.avatar-max-bytes:2097152}")
     private long avatarMaxBytes;
 
@@ -145,8 +148,14 @@ public class UserProfileController {
 
             s3Client.putObject(putRequest, RequestBody.fromBytes(resized));
 
-            // Build avatar URL
-            String avatarUrl = "/r2/" + key;
+            // Build public avatar URL (CDN or direct R2 bucket URL)
+            String baseUrl = (r2PublicBaseUrl != null && !r2PublicBaseUrl.isBlank())
+                    ? r2PublicBaseUrl.replaceAll("/$", "")
+                    : "";
+            String avatarUrl = baseUrl.isEmpty()
+                    ? "/avatar/" + principal.getUserId()  // fallback: serve via local controller
+                    : baseUrl + "/" + key;
+
 
             userService.updateAvatar(principal.getUserId(), avatarUrl);
             redirectAttributes.addFlashAttribute("success", "Аватар обновлён");

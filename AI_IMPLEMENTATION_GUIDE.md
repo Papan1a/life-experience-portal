@@ -672,11 +672,12 @@ E2E.4 — Поставить статус WANT_TO_TRY на Activity
 E2E.5 — Добавить в закладки
 E2E.6 — Второй пользователь видит первого в Friends-разделе
 E2E.7 — Admin архивирует Activity → она исчезает из каталога
+E2E.8 — Поставить WANT_TO_TRY и закладку на уровне Variant
 ```
 
 ```bash
 ./mvnw test -Dtest=EndToEndTest
-# Ожидание: Tests run: 7, Failures: 0, Errors: 0
+# Ожидание: Tests run: 8, Failures: 0, Errors: 0
 ```
 
 **8.4 — Docker Compose full stack**

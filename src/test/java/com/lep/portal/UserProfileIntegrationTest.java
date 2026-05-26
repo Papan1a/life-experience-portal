@@ -255,7 +255,8 @@ public class UserProfileIntegrationTest {
         // Verify avatar_url was updated
         User updated = userRepository.findActiveById(seedUser.getId()).orElseThrow();
         assertThat(updated.getAvatarUrl()).isNotNull();
-        assertThat(updated.getAvatarUrl()).startsWith("/r2/avatars/");
+        // Fallback when R2_PUBLIC_BASE_URL is not set: /avatar/{id}
+        assertThat(updated.getAvatarUrl()).startsWith("/avatar/");
     }
 
     private byte[] buildMinimalJpeg() {

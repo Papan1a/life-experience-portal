@@ -28,6 +28,7 @@ spring:
 r2:
   endpoint: ${R2_ENDPOINT:}
   bucket: ${R2_BUCKET:}
+  public-base-url: ${R2_PUBLIC_BASE_URL:}
   access-key-id: ${R2_ACCESS_KEY_ID:}
   secret-access-key: ${R2_SECRET_ACCESS_KEY:}
 
@@ -49,3 +50,22 @@ logging:
     com.lep.portal: DEBUG
     org.springframework.jdbc.core: TRACE
     org.flywaydb: DEBUG
+
+---
+# Test profile: shorter connection pool lifetimes to avoid HikariPool
+# warnings when Testcontainers closes connections on container shutdown.
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    hikari:
+      max-lifetime: 60000          # 1 min (default 30 min)
+      idle-timeout: 30000           # 30 sec (default 10 min)
+      keepalive-time: 15000         # 15 sec (default disabled)
+      validation-timeout: 5000      # 5 sec
+
+logging:
+  level:
+    org.springframework.jdbc.core: INFO    # quiet down in tests
+    org.flywaydb: INFO
