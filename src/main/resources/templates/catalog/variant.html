@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{_layout}">
+<head>
+    <title th:text="${variant.title}">Вариант</title>
+</head>
+<body>
+<main layout:fragment="content" class="app-layout">
+
+    <!-- Хлебные крошки -->
+    <nav class="breadcrumb text-muted mb-4" style="font-size: 0.85rem;">
+        <a href="/">Каталог</a> →
+        <a th:href="@{/activities/{id}(id=${activity.id})}" th:text="${activity.title}">Активность</a> →
+        <span th:text="${variant.title}">Вариант</span>
+    </nav>
+
+    <!-- Основная карточка варианта -->
+    <div class="card">
+        <div class="flex justify-between align-center mb-4">
+            <h1 class="page-title" th:text="${variant.title}" style="margin-bottom: 0;">Название</h1>
+            <span class="badge badge-active">Вариант</span>
+        </div>
+
+        <p class="text-muted" th:text="${variant.description}" style="white-space: pre-wrap;">
+            Описание варианта...
+        </p>
+
+        <div class="mt-4" style="display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font-size: 0.9rem;">
+            <th:block th:if="${variant.differenceReason != null}">
+                <span class="text-muted">💡 Чем отличается:</span>
+                <span th:text="${variant.differenceReason}">—</span>
+            </th:block>
+            <th:block th:if="${variant.extraRequirements != null}">
+                <span class="text-muted">📋 Доп. требования:</span>
+                <span th:text="${variant.extraRequirements}">—</span>
+            </th:block>
+        </div>
+
+        <!-- Статус и закладка (HTMX) -->
+        <div class="flex justify-between align-center mt-4"
+             style="border-top: 1px solid var(--color-border); padding-top: 12px;">
+            <div th:replace="~{experience/_status_buttons :: statusButtons(${activity.id}, ${variant.id}, ${userExperience})}">
+                <!-- Status buttons rendered by HTMX fragment -->
+            </div>
+            <div th:replace="~{experience/_bookmark_button :: bookmarkButton(${activity.id}, ${variant.id}, ${bookmark})}">
+                <!-- Bookmark button rendered by HTMX fragment -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Ссылка на родительскую активность -->
+    <div class="mt-4 text-center">
+        <a th:href="@{/activities/{id}(id=${activity.id})}"
+           class="btn btn-secondary">
+            ← Вернуться к "<span th:text="${activity.title}">Активность</span>"
+        </a>
+    </div>
+
+</main>
+</body>
+</html>

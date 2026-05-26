@@ -1,0 +1,42 @@
+<!-- HTMX fragment: status buttons for activity/variant detail pages -->
+<th:block xmlns:th="http://www.thymeleaf.org">
+<div id="status-buttons" th:fragment="statusButtons(activityId, variantId, userExperience)">
+    <form hx-post="@{/experiences}"
+          hx-swap="outerHTML"
+          hx-target="#status-buttons"
+          class="flex gap-2 align-center mt-4"
+          style="flex-wrap: wrap;">
+        <input type="hidden" name="activityId" th:value="${activityId}"/>
+        <input type="hidden" name="variantId" th:value="${variantId}"/>
+
+        <button type="submit" name="status" value="INTERESTING"
+                th:classappend="${userExperience != null && userExperience.status == 'INTERESTING'} ? 'btn-primary' : 'btn-secondary'"
+                class="btn btn-small">
+            ✨ Интересно
+        </button>
+        <button type="submit" name="status" value="WANT_TO_TRY"
+                th:classappend="${userExperience != null && userExperience.status == 'WANT_TO_TRY'} ? 'btn-primary' : 'btn-secondary'"
+                class="btn btn-small">
+            🎯 Хочу попробовать
+        </button>
+        <button type="submit" name="status" value="TRIED"
+                th:classappend="${userExperience != null && userExperience.status == 'TRIED'} ? 'btn-primary' : 'btn-secondary'"
+                class="btn btn-small">
+            ✅ Пробовал(а)
+        </button>
+        <button type="submit" name="status" value="WANT_REPEAT"
+                th:classappend="${userExperience != null && userExperience.status == 'WANT_REPEAT'} ? 'btn-primary' : 'btn-secondary'"
+                class="btn btn-small">
+            🔄 Хочу повторить
+        </button>
+
+        <th:block th:if="${userExperience != null}">
+            <button type="submit" name="status" value=""
+                    class="btn btn-small btn-secondary"
+                    style="color: var(--color-error);">
+                ✕ Снять отметку
+            </button>
+        </th:block>
+    </form>
+</div>
+</th:block>

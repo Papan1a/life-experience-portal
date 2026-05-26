@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -26,6 +27,17 @@ public interface UserExperienceRepository extends CrudRepository<UserExperience,
     @Query("SELECT * FROM user_experiences WHERE user_id = :userId AND status = :status ORDER BY updated_at DESC")
     List<UserExperience> findByUserIdAndStatus(
             @Param("userId") UUID userId, @Param("status") String status);
+
+    @Modifying
+    @Query("""
+        DELETE FROM user_experiences
+        WHERE user_id = :userId AND activity_id = :activityId
+          AND variant_id IS NOT DISTINCT FROM :variantId
+    """)
+    void deleteByUserActivityVariant(
+            @Param("userId") UUID userId,
+            @Param("activityId") UUID activityId,
+            @Param("variantId") UUID variantId);
 
     @Query("""
         SELECT ux.* FROM user_experiences ux

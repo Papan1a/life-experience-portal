@@ -41,4 +41,7 @@ public class Category {
 
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) { isActive = active; }
+
+    /** Display name for use in templates. Delegates to {@code labelRu}. */
+    public String getName() { return labelRu; }
 }

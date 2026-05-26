@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{_layout}">
+<head>
+    <title layout:title-pattern="$CONTENT_TITLE">Создание активности</title>
+</head>
+<body>
+<main layout:fragment="content">
+
+    <h1 th:text="${activity != null} ? 'Редактировать активность' : 'Новая активность'">Новая активность</h1>
+
+    <!-- Duplicate warning fragment (T4.4) -->
+    <div th:if="${duplicates != null and !duplicates.empty}" class="dup-warning"
+         th:fragment="dup-warning">
+        <p>
+            <strong>Похожая активность уже существует:</strong>
+            <span th:each="dup : ${duplicates}" th:text="${dup.title} + ' '" th:remove="tag">Дубль</span>
+        </p>
+        <p>Хотите создать вариант вместо этого?</p>
+        <div class="dup-actions">
+            <form method="post" th:action="@{/activities}" style="display:inline">
+                <input type="hidden" name="title" th:value="${form.title}"/>
+                <input type="hidden" name="description" th:value="${form.description}"/>
+                <input type="hidden" name="categoryId" th:value="${form.categoryId}"/>
+                <input type="hidden" name="complexity" th:value="${form.complexity}"/>
+                <input type="hidden" name="costTier" th:value="${form.costTier}"/>
+                <input type="hidden" name="estimatedDuration" th:value="${form.estimatedDuration}"/>
+                <input type="hidden" name="requirements" th:value="${form.requirements}"/>
+                <input type="hidden" name="interestingReason" th:value="${form.interestingReason}"/>
+                <input type="hidden" name="tags" th:value="${form.tags}"/>
+                <input type="hidden" name="force" value="true"/>
+                <button type="submit" class="btn btn-primary">Всё равно создать</button>
+            </form>
+            <a th:href="@{'/activities/' + ${duplicates[0].id} + '/variants/new'}"
+               class="btn btn-secondary">Создать вариант</a>
+        </div>
+    </div>
+
+    <form th:action="@{${activity != null} ? '/activities/' + ${activity.id} : '/activities'}"
+          th:object="${form}" method="post" class="content-form">
+
+        <div class="form-group">
+            <label for="title">Название *</label>
+            <input type="text" id="title" th:field="*{title}" class="form-control"
+                   placeholder="Например: Горные лыжи" required/>
+            <p th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="form-error">Ошибка</p>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Описание</label>
+            <textarea id="description" th:field="*{description}" class="form-control"
+                      rows="4" placeholder="Опишите активность..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="categoryId">Категория *</label>
+            <select id="categoryId" th:field="*{categoryId}" class="form-control" required>
+                <option value="">-- Выберите --</option>
+                <option th:each="cat : ${categories}"
+                        th:value="${cat.id}"
+                        th:text="${cat.labelRu}">Категория</option>
+            </select>
+            <p th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}" class="form-error">Ошибка</p>
+        </div>
+
+        <div class="form-group">
+            <label for="complexity">Сложность</label>
+            <select id="complexity" th:field="*{complexity}" class="form-control">
+                <option th:each="c : ${complexities}"
+                        th:value="${c}"
+                        th:text="${c}">Сложность</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="costTier">Стоимость</label>
+            <select id="costTier" th:field="*{costTier}" class="form-control">
+                <option th:each="t : ${costTiers}"
+                        th:value="${t}"
+                        th:text="${t}">Стоимость</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="estimatedDuration">Примерная длительность</label>
+            <input type="text" id="estimatedDuration" th:field="*{estimatedDuration}"
+                   class="form-control" placeholder="Например: 2 часа / 30 мин в день"/>
+        </div>
+
+        <div class="form-group">
+            <label for="requirements">Требования</label>
+            <textarea id="requirements" th:field="*{requirements}" class="form-control"
+                      rows="3" placeholder="Что нужно для начала?"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="interestingReason">Почему это интересно</label>
+            <textarea id="interestingReason" th:field="*{interestingReason}" class="form-control"
+                      rows="3" placeholder="Почему стоит попробовать?"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="tags">Теги (через запятую)</label>
+            <input type="text" id="tags" th:field="*{tags}" class="form-control"
+                   placeholder="Например: вода, спорт, экстрим"
+                   autocomplete="off"
+                   list="tag-suggestions"
+                   hx-get="/tags/suggest"
+                   hx-trigger="keyup changed delay:200ms"
+                   hx-target="#tag-suggestions"
+                   hx-include="[name='tags']"/>
+            <datalist id="tag-suggestions">
+                <option th:each="t : ${suggestions}" th:value="${t.slug}" th:text="${t.name}"/>
+            </datalist>
+        </div>
+
+        <div class="form-actions">
+            <a th:href="@{/}" class="btn btn-secondary">Отмена</a>
+            <button type="submit" class="btn btn-primary"
+                    th:text="${activity != null} ? 'Сохранить' : 'Создать активность'">
+                Создать активность
+            </button>
+        </div>
+    </form>
+
+</main>
+</body>
+</html>

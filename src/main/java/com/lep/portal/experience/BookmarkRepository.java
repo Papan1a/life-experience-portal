@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -23,6 +24,7 @@ public interface BookmarkRepository extends CrudRepository<Bookmark, UUID> {
     @Query("SELECT * FROM bookmarks WHERE user_id = :userId ORDER BY created_at DESC")
     List<Bookmark> findByUserId(@Param("userId") UUID userId);
 
+    @Modifying
     @Query("""
         DELETE FROM bookmarks
         WHERE user_id = :userId AND activity_id = :activityId

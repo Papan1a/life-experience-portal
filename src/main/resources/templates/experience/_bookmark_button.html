@@ -1,0 +1,18 @@
+<!-- HTMX fragment: bookmark toggle button -->
+<th:block xmlns:th="http://www.thymeleaf.org">
+<div id="bookmark-button" th:fragment="bookmarkButton(activityId, variantId, bookmark)">
+    <form hx-post="@{/bookmarks/toggle}"
+          hx-swap="outerHTML"
+          hx-target="#bookmark-button">
+        <input type="hidden" name="activityId" th:value="${activityId}"/>
+        <input type="hidden" name="variantId" th:value="${variantId}"/>
+
+        <button type="submit"
+                class="btn btn-small"
+                th:classappend="${bookmark != null} ? 'btn-primary' : 'btn-secondary'">
+            <th:block th:if="${bookmark != null}">🔖 Сохранено</th:block>
+            <th:block th:unless="${bookmark != null}">🔖 Сохранить</th:block>
+        </button>
+    </form>
+</div>
+</th:block>

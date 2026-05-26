@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{_layout}">
+<head>
+    <title layout:title-pattern="$CONTENT_TITLE">Новый вариант</title>
+</head>
+<body>
+<main layout:fragment="content">
+
+    <h1 th:text="${variant != null} ? 'Редактировать вариант' : 'Новый вариант'">Новый вариант</h1>
+
+    <div class="parent-info">
+        <p>
+            <strong>Активность:</strong>
+            <a th:href="@{'/activities/' + ${activity.id}}" th:text="${activity.title}">Активность</a>
+        </p>
+    </div>
+
+    <form th:action="@{${variant != null}
+                        ? '/activities/' + ${activity.id} + '/variants/' + ${variant.id}
+                        : '/activities/' + ${activity.id} + '/variants'}"
+          th:object="${form}" method="post" class="content-form">
+
+        <div class="form-group">
+            <label for="title">Название *</label>
+            <input type="text" id="title" th:field="*{title}" class="form-control"
+                   placeholder="Например: Горные лыжи (фрирайд)" required/>
+            <p th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="form-error">Ошибка</p>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Описание</label>
+            <textarea id="description" th:field="*{description}" class="form-control"
+                      rows="4" placeholder="Опишите вариант..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="differenceReason">В чём отличие от основной активности</label>
+            <textarea id="differenceReason" th:field="*{differenceReason}" class="form-control"
+                      rows="3" placeholder="Почему этот вариант отличается?"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="extraRequirements">Дополнительные требования</label>
+            <textarea id="extraRequirements" th:field="*{extraRequirements}" class="form-control"
+                      rows="2" placeholder="Что ещё нужно для этого варианта?"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="tags">Теги (через запятую)</label>
+            <input type="text" id="tags" th:field="*{tags}" class="form-control"
+                   placeholder="Например: вода, спорт"
+                   autocomplete="off"
+                   list="variant-tag-suggestions"
+                   hx-get="/tags/suggest"
+                   hx-trigger="keyup changed delay:200ms"
+                   hx-target="#variant-tag-suggestions"
+                   hx-include="[name='tags']"/>
+            <datalist id="variant-tag-suggestions">
+                <option th:each="t : ${suggestions}" th:value="${t.slug}" th:text="${t.name}"/>
+            </datalist>
+        </div>
+
+        <div class="form-actions">
+            <a th:href="@{'/activities/' + ${activity.id}}" class="btn btn-secondary">Отмена</a>
+            <button type="submit" class="btn btn-primary"
+                    th:text="${variant != null} ? 'Сохранить' : 'Создать вариант'">
+                Создать вариант
+            </button>
+        </div>
+    </form>
+
+</main>
+</body>
+</html>

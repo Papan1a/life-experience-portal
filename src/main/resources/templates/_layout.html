@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title layout:title-pattern="$CONTENT_TITLE — $LAYOUT_TITLE">Life Experience Portal</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+    <script th:src="@{/js/htmx.min.js}"></script>
+</head>
+<body>
+    <nav class="nav-bar" th:fragment="nav">
+        <div class="nav-brand">
+            <a href="/" class="nav-logo">LEP</a>
+        </div>
+        <div class="nav-links">
+            <a href="/">Каталог</a>
+            <a href="/saved">Сохранённое</a>
+            <a href="/my-experiences">Мой опыт</a>
+            <a href="/invites">Приглашения</a>
+            <a href="/profile">Профиль</a>
+            <form th:action="@{/logout}" method="post" class="nav-logout-form">
+                <button type="submit" class="btn-link">Выйти</button>
+            </form>
+        </div>
+    </nav>
+
+    <main layout:fragment="content">
+        <!-- page content here -->
+    </main>
+</body>
+</html>

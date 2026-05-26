@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{_layout}">
+<head>
+    <title th:text="${activity.title}">Активность</title>
+</head>
+<body>
+<main layout:fragment="content" class="app-layout">
+
+    <!-- Хлебные крошки -->
+    <nav class="breadcrumb text-muted mb-4" style="font-size: 0.85rem;">
+        <a href="/">Каталог</a> →
+        <a th:href="@{/(category=${category.slug})}" th:text="${category.labelRu}">Категория</a> →
+        <span th:text="${activity.title}">Активность</span>
+    </nav>
+
+    <!-- Основная карточка активности -->
+    <div class="card">
+        <div class="flex justify-between align-center mb-4">
+            <h1 class="page-title" th:text="${activity.title}" style="margin-bottom: 0;">Название</h1>
+            <div class="flex gap-2 align-center">
+                <span th:if="${activity.complexity != null}"
+                      class="badge badge-active"
+                      th:text="${activity.complexity}">medium</span>
+                <span th:if="${activity.costTier != null}"
+                      class="badge"
+                      th:classappend="${activity.costTier == 'free'} ? 'badge-active' : 'badge-expired'"
+                      th:text="${activity.costTier}">free</span>
+            </div>
+        </div>
+
+        <p class="text-muted" th:text="${activity.description}" style="white-space: pre-wrap;">
+            Описание активности...
+        </p>
+
+        <div class="mt-4" style="display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font-size: 0.9rem;">
+            <th:block th:if="${activity.estimatedDuration != null}">
+                <span class="text-muted">⏱ Длительность:</span>
+                <span th:text="${activity.estimatedDuration}">1 час</span>
+            </th:block>
+            <th:block th:if="${activity.requirements != null}">
+                <span class="text-muted">📋 Требования:</span>
+                <span th:text="${activity.requirements}">—</span>
+            </th:block>
+            <th:block th:if="${activity.interestingReason != null}">
+                <span class="text-muted">✨ Почему стоит попробовать:</span>
+                <span th:text="${activity.interestingReason}">—</span>
+            </th:block>
+        </div>
+
+        <!-- Статус и закладка (HTMX) -->
+        <div class="flex justify-between align-center mt-4"
+             style="border-top: 1px solid var(--color-border); padding-top: 12px;">
+            <div th:replace="~{experience/_status_buttons :: statusButtons(${activity.id}, null, ${userExperience})}">
+                <!-- Status buttons rendered by HTMX fragment -->
+            </div>
+            <div th:replace="~{experience/_bookmark_button :: bookmarkButton(${activity.id}, null, ${bookmark})}">
+                <!-- Bookmark button rendered by HTMX fragment -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Варианты -->
+    <div class="card mt-4" th:if="${!variants.isEmpty()}">
+        <h2 style="font-size: 1.2rem; margin-bottom: 12px;">Варианты</h2>
+        <div th:each="variant : ${variants}" class="mb-4" style="padding-bottom: 12px; border-bottom: 1px solid var(--color-border);">
+            <div class="flex justify-between align-center">
+                <h3 style="font-size: 1rem; margin-bottom: 4px;">
+                    <a th:href="@{/activities/{aid}/variants/{vid}(aid=${activity.id},vid=${variant.id})}"
+                       th:text="${variant.title}"
+                       style="color: var(--color-primary); text-decoration: none;">
+                        Вариант
+                    </a>
+                </h3>
+            </div>
+            <p class="text-muted" style="font-size: 0.85rem;"
+               th:text="${#strings.abbreviate(variant.description, 150)}">
+                Краткое описание варианта...
+            </p>
+            <p th:if="${variant.differenceReason != null}" class="text-muted" style="font-size: 0.8rem;">
+                💡 <span th:text="${variant.differenceReason}">Чем отличается</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Похожие активности -->
+    <div class="card mt-4" th:if="${!similar.isEmpty()}">
+        <h2 style="font-size: 1.2rem; margin-bottom: 12px;">Похожие активности</h2>
+        <div th:each="sim : ${similar}" class="flex align-center justify-between mb-4"
+             style="padding-bottom: 8px; border-bottom: 1px solid var(--color-border);">
+            <a th:href="@{/activities/{id}(id=${sim.id})}"
+               th:text="${sim.title}"
+               style="color: var(--color-primary); text-decoration: none;">
+                Похожая активность
+            </a>
+            <span th:if="${sim.complexity != null}" class="badge badge-active" th:text="${sim.complexity}">medium</span>
+        </div>
+    </div>
+
+    <div th:if="${variants.isEmpty() && similar.isEmpty()}" class="text-center text-muted mt-4">
+        <p>Нет вариантов или похожих активностей.</p>
+    </div>
+
+</main>
+</body>
+</html>

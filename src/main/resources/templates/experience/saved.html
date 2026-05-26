@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{_layout}">
+<head>
+    <title>Сохранённое</title>
+</head>
+<body>
+<main layout:fragment="content" class="app-layout">
+
+    <h1 class="page-title" style="margin-bottom: 24px;">🔖 Сохранённое</h1>
+
+    <div th:if="${savedItems.isEmpty()}">
+        <div class="card text-center text-muted" style="padding: 48px 24px;">
+            <p style="font-size: 1.1rem;">У вас пока нет сохранённых активностей.</p>
+            <p style="margin-top: 8px;">
+                <a href="/" class="btn btn-primary">Перейти в каталог</a>
+            </p>
+        </div>
+    </div>
+
+    <div th:each="item : ${savedItems}" class="card" style="padding: 16px 24px;">
+        <div class="flex justify-between align-center">
+            <div>
+                <a th:href="@{/activities/{id}(id=${item.activity().id})}"
+                   th:text="${item.activity().title}"
+                   style="color: var(--color-primary); text-decoration: none; font-weight: 600; font-size: 1.05rem;">
+                    Название активности
+                </a>
+
+                <th:block th:if="${item.variant() != null}">
+                    <span class="text-muted" style="margin: 0 4px;">→</span>
+                    <a th:href="@{/activities/{aid}/variants/{vid}(aid=${item.activity().id},vid=${item.variant().id})}"
+                       th:text="${item.variant().title}"
+                       style="color: var(--color-primary); text-decoration: none; font-size: 0.95rem;">
+                        Вариант
+                    </a>
+                </th:block>
+
+                <th:block th:if="${item.userExperience() != null}">
+                    <span class="badge badge-active" style="margin-left: 8px;"
+                          th:text="${T(com.lep.portal.experience.ExperienceService).statusLabel(item.userExperience().status)}">
+                        Статус
+                    </span>
+                </th:block>
+            </div>
+
+            <div th:replace="~{experience/_bookmark_button :: bookmarkButton(${item.activity().id}, ${item.variant() != null ? item.variant().id : null}, ${item.bookmark()})}">
+                <!-- Bookmark button rendered by HTMX fragment -->
+            </div>
+        </div>
+
+        <p class="text-muted" style="font-size: 0.85rem; margin-top: 4px;"
+           th:text="${#strings.abbreviate(item.activity().description, 120)}">
+            Краткое описание...
+        </p>
+    </div>
+
+</main>
+</body>
+</html>

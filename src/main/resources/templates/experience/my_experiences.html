@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{_layout}">
+<head>
+    <title>Мой опыт</title>
+</head>
+<body>
+<main layout:fragment="content" class="app-layout">
+
+    <h1 class="page-title" style="margin-bottom: 24px;">📝 Мой опыт</h1>
+
+    <div th:if="${experiences.isEmpty()}">
+        <div class="card text-center text-muted" style="padding: 48px 24px;">
+            <p style="font-size: 1.1rem;">Вы ещё не отметили ни одной активности.</p>
+            <p style="margin-top: 8px;">
+                <a href="/" class="btn btn-primary">Перейти в каталог</a>
+            </p>
+        </div>
+    </div>
+
+    <th:block th:each="statusKey : ${experiences.keySet()}">
+        <div class="card" style="margin-bottom: 24px;">
+            <h2 th:text="${T(com.lep.portal.experience.ExperienceService).statusLabel(statusKey)}"
+                style="font-size: 1.1rem; margin-bottom: 12px; color: var(--color-primary);">
+                Статус
+            </h2>
+
+            <div th:each="ux : ${experiences.get(statusKey)}" class="flex justify-between align-center"
+                 style="padding: 10px 0; border-bottom: 1px solid var(--color-border);">
+                <div>
+                    <a th:href="@{/activities/{id}(id=${ux.activityId})}"
+                       th:text="${activityTitles[ux.activityId] != null ? activityTitles[ux.activityId] : 'Активность #' + ux.activityId}"
+                       style="color: var(--color-primary); text-decoration: none; font-weight: 500;">
+                        Название активности
+                    </a>
+
+                    <th:block th:if="${ux.variantId != null}">
+                        <span class="text-muted" style="margin: 0 4px;">→</span>
+                        <a th:href="@{/activities/{aid}/variants/{vid}(aid=${ux.activityId},vid=${ux.variantId})}"
+                           th:text="${variantTitles[ux.variantId] != null ? variantTitles[ux.variantId] : 'Вариант'}"
+                           style="color: var(--color-primary); text-decoration: none; font-size: 0.9rem;">
+                            Вариант
+                        </a>
+                    </th:block>
+                </div>
+
+                <span class="text-muted" style="font-size: 0.8rem;"
+                      th:if="${ux.updatedAt != null}"
+                      th:text="${#temporals.format(ux.updatedAt, 'dd.MM.yyyy')}">
+                    дата
+                </span>
+            </div>
+        </div>
+    </th:block>
+
+</main>
+</body>
+</html>
