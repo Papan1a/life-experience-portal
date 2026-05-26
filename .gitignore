@@ -73,3 +73,6 @@ Desktop.ini
 *.swp
 *.swo
 *~
+
+# Project docs (local only)
+docs/

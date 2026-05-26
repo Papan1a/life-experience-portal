@@ -37,8 +37,6 @@ public class UserController {
     public String registerForm(@RequestParam(value = "code", required = false) String inviteCode,
                                Model model) {
         if (inviteCode == null || inviteCode.isBlank()) {
-            model.addAttribute("error", "Для регистрации необходим код приглашения. "
-                    + "Попросите действующего пользователя создать приглашение.");
             return "register";
         }
 

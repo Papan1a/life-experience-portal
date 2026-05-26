@@ -13,14 +13,24 @@
 
         <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
 
+        <!-- Форма ввода кода, если код не передан -->
         <div th:if="${inviteCode == null}">
-            <p class="auth-info">
-                Для регистрации необходим код приглашения.<br>
-                Попросите действующего пользователя создать приглашение.
+            <p class="auth-info">Введите код приглашения:</p>
+            <form action="/register" method="get" class="auth-form">
+                <div class="form-group">
+                    <label for="code">Код приглашения</label>
+                    <input type="text" id="code" name="code"
+                           required autofocus placeholder="Вставьте код сюда"
+                           autocomplete="off">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Продолжить</button>
+            </form>
+            <p class="auth-footer">
+                Уже есть аккаунт? <a th:href="@{/login}">Войти</a>
             </p>
-            <p><a th:href="@{/login}" class="btn btn-secondary">← На страницу входа</a></p>
         </div>
 
+        <!-- Форма регистрации с кодом -->
         <form th:if="${inviteCode != null}"
               th:action="@{/register}"
               th:object="${registrationForm}"
@@ -66,7 +76,7 @@
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         </form>
 
-        <p class="auth-footer">
+        <p th:if="${inviteCode != null}" class="auth-footer">
             Уже есть аккаунт? <a th:href="@{/login}">Войти</a>
         </p>
     </div>

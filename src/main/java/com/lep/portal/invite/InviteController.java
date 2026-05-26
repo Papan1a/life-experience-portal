@@ -11,6 +11,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.lep.portal.user.PortalUserDetails;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @Controller
 @RequestMapping("/invites")
 public class InviteController {
@@ -22,8 +24,11 @@ public class InviteController {
     }
 
     @GetMapping
-    public String listMyInvites(@AuthenticationPrincipal PortalUserDetails principal, Model model) {
+    public String listMyInvites(@AuthenticationPrincipal PortalUserDetails principal,
+                                 HttpServletRequest request,
+                                 Model model) {
         model.addAttribute("invites", inviteService.getMyInvites(principal.getUserId()));
+        model.addAttribute("baseUrl", buildBaseUrl(request));
         return "invite/list";
     }
 
@@ -36,12 +41,26 @@ public class InviteController {
 
     @GetMapping("/{id}")
     public String showInvite(@AuthenticationPrincipal PortalUserDetails principal,
-                             @PathVariable String id, Model model) {
+                             @PathVariable String id,
+                             HttpServletRequest request,
+                             Model model) {
         java.util.UUID inviteId = java.util.UUID.fromString(id);
         Invite invite = inviteService.getInvite(inviteId);
+        String baseUrl = buildBaseUrl(request);
         model.addAttribute("invite", invite);
-        model.addAttribute("registrationLink", "/register?code=" + invite.getCode());
+        model.addAttribute("registrationLink", baseUrl + "/register?code=" + invite.getCode());
         return "invite/show";
+    }
+
+    private String buildBaseUrl(HttpServletRequest request) {
+        int port = request.getServerPort();
+        String scheme = request.getScheme();
+        String host = request.getServerName();
+        if ((scheme.equals("http") && port == 80)
+                || (scheme.equals("https") && port == 443)) {
+            return scheme + "://" + host;
+        }
+        return scheme + "://" + host + ":" + port;
     }
 
     @PostMapping("/{id}/revoke")

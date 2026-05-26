@@ -145,12 +145,12 @@ public class AuthIntegrationTest {
     // ---- T2.3 ----
     @Test
     @Order(3)
-    @DisplayName("T2.3 — GET /register без кода → страница с сообщением об ошибке")
+    @DisplayName("T2.3 — GET /register без кода → страница с формой ввода кода")
     void registerWithoutCodeShowsError() throws Exception {
         mockMvc.perform(get("/register"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString(
-                        "Для регистрации необходим код приглашения")));
+                        "Введите код приглашения")));
     }
 
     // ---- T2.4 ----
