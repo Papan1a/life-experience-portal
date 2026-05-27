@@ -14,6 +14,13 @@
 
 | # | Задача | Приоритет | Примечания |
 |---|---|---|---|
+| | 9 | Одноразовые инвайты + лимит 5 активных (Issues #1, #7) | Высокий | [Подробный план](tasks/issue-01-invite-one-shot.md) |
+| | 10 | Логин по email регистронезависимый (Issue #3) | Средний | [План](tasks/issue-03-case-insensitive-login.md) |
+| | 11 | "Мой опыт": показывать названия вместо UUID (Issue #8) | Высокий | [План](tasks/issue-08-my-experiences-titles.md) |
+| | 12 | Выровнять кнопки на странице активности (Issue #9) | Низкий | [План](tasks/issue-09-buttons-alignment.md) |
+| | 13 | Аватар-заглушка при отсутствии фото (Issue #10) | Низкий | [План](tasks/issue-10-default-avatar.md) |
+| | 14 | Профиль: убрать "Био не заполнено", показать email (Issues #11a, #11b) | Низкий | [План](tasks/issue-11-profile-bio-email.md) |
+| | 15 | Управление профилем: смена пароля и email (Issue #12) | Средний | [План](tasks/issue-12-profile-edit-controls.md) |
 | | 3 | Автологаут через 5 минут бездействия | Средний | `SessionConfig.java` (300 сек), `_layout.html` (JS-таймер) |
 | | 4 | Обновить счётчики тестов в AI_IMPLEMENTATION_GUIDE.md (блоки 1–4) | Низкий | T1.9–11, T2.9–11, T3.9–11, T4.9–12 |
 | | 6 | R2 avatar URL — заглушка `/r2/...` вместо реального URL | Высокий (prod) | `UserProfileController.java:149` |
@@ -74,6 +81,7 @@
 | | 1 | Улучшение flow регистрации (Вариант B) | `InviteController.java`, `invite/show.html`, `invite/list.html`, `register.html`, `login.html`, `UserController.java` | 26.05.2026 |
 | | 2 | DevSeed — seed тестовых данных при профиле `dev` | `DevSeedRunner.java`, `BootstrapApplicationRunner.java`, `application.yml`, `docker-compose.yml`, `StartupSmokeTest.java` | 26.05.2026 |
 | | 4 | Активация кнопок статуса/закладки на странице активности | `_layout.html`, `_status_buttons.html`, `_bookmark_button.html`, `_report_button.html`, `JdbcConvertersConfig.java`, `UserExperience.java`, `ExperienceService.java`, `ExperienceController.java`, `UserExperienceRepository.java`, `RepositoryIntegrationTest.java` | 26.05.2026 |
+| | 5 | Тесты на рендеринг HTMX-URL в шаблонах | `HtmxTemplateRenderingTest.java` | 26.05.2026 |
 
 ---
 
@@ -93,3 +101,4 @@
 - Замена `main.css` на Pico CSS или Tabler для более профессионального вида (после завершения функционала)
 - Добавить тесты на недостающие сценарии из аудита блоков 1–4 (13 новых тестов)
 - HikariPool warnings в тестах — настроить `maxLifetime` в `application.yml` для тестового профиля
+- Pre-commit hook: grep `hx-(post|get|put|delete|patch)\s*=\s*"@\{` в `src/main/resources/templates/` для блокировки коммита с необработанными Thymeleaf-выражениями в HTMX-атрибутах (быстрее запуска тестов)
