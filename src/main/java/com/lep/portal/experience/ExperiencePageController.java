@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -49,19 +50,19 @@ public class ExperiencePageController {
         Map<String, List<UserExperience>> grouped = experienceService.getMyExperiences(principal.getUserId());
 
         // Build title lookup maps for display
-        Map<String, String> activityTitles = new HashMap<>();
-        Map<String, String> variantTitles = new HashMap<>();
+        Map<UUID, String> activityTitles = new HashMap<>();
+        Map<UUID, String> variantTitles = new HashMap<>();
 
         for (var entry : grouped.entrySet()) {
             for (UserExperience ux : entry.getValue()) {
-                if (!activityTitles.containsKey(ux.getActivityId().toString())) {
+                if (!activityTitles.containsKey(ux.getActivityId())) {
                     Optional<Activity> act = activityRepository.findById(ux.getActivityId());
-                    activityTitles.put(ux.getActivityId().toString(),
+                    activityTitles.put(ux.getActivityId(),
                             act.map(Activity::getTitle).orElse("Активность #" + ux.getActivityId()));
                 }
-                if (ux.getVariantId() != null && !variantTitles.containsKey(ux.getVariantId().toString())) {
+                if (ux.getVariantId() != null && !variantTitles.containsKey(ux.getVariantId())) {
                     Optional<Variant> var = variantRepository.findById(ux.getVariantId());
-                    variantTitles.put(ux.getVariantId().toString(),
+                    variantTitles.put(ux.getVariantId(),
                             var.map(Variant::getTitle).orElse("Вариант"));
                 }
             }
