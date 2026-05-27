@@ -8,19 +8,36 @@
     <h1 class="page-title">Приглашение создано</h1>
 
     <div class="card" style="max-width: 600px;">
-        <p style="margin-bottom: 16px;">Отправьте эту ссылку человеку, которого хотите пригласить:</p>
 
-        <div class="invite-link-box">
-            <a th:href="${registrationLink}" th:text="${registrationLink}"
-               style="word-break: break-all; color: var(--color-primary);"></a>
+        <!-- Status badge -->
+        <div style="margin-bottom: 16px;">
+            <span th:switch="${invite.status.name()}">
+                <span th:case="'ACTIVE'"  class="badge badge-active">Активен</span>
+                <span th:case="'USED'"    class="badge badge-used">Использован</span>
+                <span th:case="'EXPIRED'" class="badge badge-expired">Истёк</span>
+                <span th:case="'REVOKED'" class="badge badge-revoked">Отозван</span>
+            </span>
         </div>
 
-        <button onclick="copyInviteLink()" class="btn btn-primary" style="margin-top: 12px;">
-            Скопировать ссылку
-        </button>
-        <span id="copy-hint" style="display:none; margin-left: 10px; color: var(--color-success); font-size: 0.9rem;">
-            Скопировано!
-        </span>
+        <th:block th:if="${invite.status.name() == 'ACTIVE'}">
+            <p style="margin-bottom: 16px;">Отправьте эту ссылку человеку, которого хотите пригласить:</p>
+
+            <div class="invite-link-box">
+                <a th:href="${registrationLink}" th:text="${registrationLink}"
+                   style="word-break: break-all; color: var(--color-primary);"></a>
+            </div>
+
+            <button onclick="copyInviteLink()" class="btn btn-primary" style="margin-top: 12px;">
+                Скопировать ссылку
+            </button>
+            <span id="copy-hint" style="display:none; margin-left: 10px; color: var(--color-success); font-size: 0.9rem;">
+                Скопировано!
+            </span>
+        </th:block>
+
+        <th:block th:if="${invite.status.name() != 'ACTIVE'}">
+            <p class="text-muted">Это приглашение больше не активно.</p>
+        </th:block>
 
         <hr style="margin: 20px 0; border-color: var(--color-border);">
 

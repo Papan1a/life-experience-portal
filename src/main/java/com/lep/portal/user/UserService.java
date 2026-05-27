@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.lep.portal.common.NotFoundException;
+import com.lep.portal.invite.InvalidInviteException;
 import com.lep.portal.invite.Invite;
 import com.lep.portal.invite.InviteService;
 
@@ -34,8 +35,8 @@ public class UserService {
             throw new IllegalArgumentException("Email уже используется");
         }
 
-        // Validate invite code
-        Invite invite = inviteService.validateAndUse(form.getInviteCode());
+        // Validate invite code (does NOT mark as used yet)
+        Invite invite = inviteService.validateForRegistration(form.getInviteCode());
 
         User user = new User();
         user.setEmail(form.getEmail().toLowerCase().trim());
@@ -44,7 +45,16 @@ public class UserService {
         user.setInvitedByUserId(invite.getCreatedBy());
         user.setInviteId(invite.getId());
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        // Atomically mark invite as used. If race condition — rollback.
+        boolean marked = inviteService.markUsed(invite.getId(), savedUser.getId());
+        if (!marked) {
+            throw new InvalidInviteException(
+                "Код приглашения больше не действителен");
+        }
+
+        return savedUser;
     }
 
     @Transactional(readOnly = true)

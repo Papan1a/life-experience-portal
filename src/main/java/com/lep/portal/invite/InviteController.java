@@ -29,14 +29,21 @@ public class InviteController {
                                  Model model) {
         model.addAttribute("invites", inviteService.getMyInvites(principal.getUserId()));
         model.addAttribute("baseUrl", buildBaseUrl(request));
+        model.addAttribute("activeCount", inviteService.countActiveInvites(principal.getUserId()));
+        model.addAttribute("maxActive", 5);
         return "invite/list";
     }
 
     @PostMapping("/generate")
     public String generateInvite(@AuthenticationPrincipal PortalUserDetails principal,
-                                 RedirectAttributes redirectAttributes) {
-        Invite invite = inviteService.createInvite(principal.getUserId());
-        return "redirect:/invites/" + invite.getId();
+                                 RedirectAttributes ra) {
+        try {
+            Invite invite = inviteService.createInvite(principal.getUserId());
+            return "redirect:/invites/" + invite.getId();
+        } catch (IllegalStateException e) {
+            ra.addFlashAttribute("error", e.getMessage());
+            return "redirect:/invites";
+        }
     }
 
     @GetMapping("/{id}")

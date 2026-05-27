@@ -341,6 +341,11 @@ body {
     color: #991b1b;
 }
 
+.badge-used {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
 /* ---- Inline form (logout, revoke) ---- */
 .inline-form {
     display: inline;

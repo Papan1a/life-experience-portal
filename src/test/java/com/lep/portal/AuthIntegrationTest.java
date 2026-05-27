@@ -396,4 +396,84 @@ public class AuthIntegrationTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrlPattern("**/login"));
     }
+
+    // ---- T2.12 ----
+    @Test
+    @Order(13)
+    @DisplayName("T2.12 — Повторное использование инвайта → пользователь не создан")
+    void inviteCanBeUsedOnlyOnce() throws Exception {
+        // Create a fresh one-shot invite
+        Invite oneShot = new Invite();
+        oneShot.setCode("one-shot-code");
+        oneShot.setCreatedBy(seedUser.getId());
+        oneShot.setExpiresAt(Instant.now().plus(7, ChronoUnit.DAYS));
+        inviteRepository.save(oneShot);
+
+        // First registration succeeds
+        mockMvc.perform(post("/register")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("inviteCode", "one-shot-code")
+                .param("displayName", "First User")
+                .param("email", "first@test.com")
+                .param("password", "password123")
+                .param("consent", "true")
+                .with(csrf()))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"));
+
+        // Second registration with same code fails
+        mockMvc.perform(post("/register")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("inviteCode", "one-shot-code")
+                .param("displayName", "Second User")
+                .param("email", "second@test.com")
+                .param("password", "password123")
+                .param("consent", "true")
+                .with(csrf()))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/register?code=one-shot-code"))
+            .andExpect(flash().attributeExists("error"));
+
+        // Second user does NOT exist in DB
+        Boolean exists = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) > 0 FROM users WHERE email = ?",
+                Boolean.class, "second@test.com");
+        assertThat(exists).isFalse();
+
+        // Invite is marked as used
+        Boolean used = jdbcTemplate.queryForObject(
+                "SELECT used_at IS NOT NULL FROM invites WHERE code = ?",
+                Boolean.class, "one-shot-code");
+        assertThat(used).isTrue();
+    }
+
+    // ---- T2.13 ----
+    @Test
+    @Order(14)
+    @DisplayName("T2.13 — Лимит 5 активных инвайтов → 6-й создать нельзя")
+    void cannotCreateMoreThan5ActiveInvites() throws Exception {
+        var loginResult = mockMvc.perform(formLogin("/login")
+                        .user("username", "seed@test.com")
+                        .password("password123"))
+                .andReturn();
+        var cookie = loginResult.getResponse().getCookie("SESSION");
+
+        // setUp creates 1 valid invite. Generate 4 more = 5 active total.
+        for (int i = 0; i < 4; i++) {
+            mockMvc.perform(post("/invites/generate").cookie(cookie).with(csrf()))
+                .andExpect(status().is3xxRedirection());
+        }
+
+        // 6th attempt → redirect to /invites with error
+        mockMvc.perform(post("/invites/generate").cookie(cookie).with(csrf()))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/invites"))
+            .andExpect(flash().attributeExists("error"));
+
+        Integer activeCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM invites WHERE created_by = ?::uuid " +
+                "AND used_at IS NULL AND revoked_at IS NULL AND expires_at > now()",
+                Integer.class, seedUser.getId().toString());
+        assertThat(activeCount).isEqualTo(5);
+    }
 }

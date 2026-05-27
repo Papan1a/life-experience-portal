@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class InviteService {
 
+    private static final int MAX_ACTIVE_INVITES_PER_USER = 5;
+
     private final InviteRepository inviteRepository;
     private final int ttlDays;
     private final SecureRandom secureRandom = new SecureRandom();
@@ -25,6 +27,12 @@ public class InviteService {
     }
 
     public Invite createInvite(UUID createdBy) {
+        int active = inviteRepository.countActiveByCreator(createdBy);
+        if (active >= MAX_ACTIVE_INVITES_PER_USER) {
+            throw new IllegalStateException(
+                "У вас уже " + MAX_ACTIVE_INVITES_PER_USER + " активных приглашений. " +
+                "Дождитесь использования или отзовите ненужные.");
+        }
         Invite invite = new Invite();
         invite.setCode(generateCode());
         invite.setCreatedBy(createdBy);
@@ -44,7 +52,10 @@ public class InviteService {
                 .orElseThrow(() -> new IllegalArgumentException("Invite not found"));
     }
 
-    public Invite validateAndUse(String code) {
+    /**
+     * Validates code for registration. Does NOT mark as used.
+     */
+    public Invite validateForRegistration(String code) {
         Invite invite = inviteRepository.findByCode(code)
                 .orElseThrow(() -> new InvalidInviteException("Неверный код приглашения"));
 
@@ -54,7 +65,22 @@ public class InviteService {
         if (invite.isExpired()) {
             throw new InvalidInviteException("Срок действия кода приглашения истёк");
         }
+        if (invite.isUsed()) {
+            throw new InvalidInviteException("Этот код уже использован");
+        }
         return invite;
+    }
+
+    /**
+     * Atomically marks an invite as used.
+     * Returns true if successful, false if already used/revoked/expired (race condition).
+     */
+    public boolean markUsed(UUID inviteId, UUID userId) {
+        return inviteRepository.markUsed(inviteId, userId) == 1;
+    }
+
+    public int countActiveInvites(UUID userId) {
+        return inviteRepository.countActiveByCreator(userId);
     }
 
     public Iterable<Invite> getMyInvites(UUID userId) {

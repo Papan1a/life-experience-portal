@@ -10,8 +10,15 @@
     <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
     <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
 
+    <p class="text-muted" style="margin-bottom: 12px;">
+        Активных приглашений: <strong th:text="${activeCount}">0</strong>
+        / <span th:text="${maxActive}">5</span>
+    </p>
     <form th:action="@{/invites/generate}" method="post" style="margin-bottom: 24px;">
-        <button type="submit" class="btn btn-primary">Создать приглашение</button>
+        <button type="submit" class="btn btn-primary"
+                th:disabled="${activeCount >= maxActive}">
+            Создать приглашение
+        </button>
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
     </form>
 
@@ -36,7 +43,7 @@
             <tr th:each="invite : ${invites}">
                 <td><code th:text="${invite.code}"></code></td>
                 <td>
-                    <button th:if="${invite.valid}"
+                    <button th:if="${invite.status.name() == 'ACTIVE'}"
                             th:data-link="${baseUrl + '/register?code=' + invite.code}"
                             onclick="copyLink(this.dataset.link)"
                             class="btn btn-secondary btn-small">Скопировать</button>
@@ -44,12 +51,15 @@
                 <td th:text="${#temporals.format(invite.createdAt, 'dd.MM.yyyy HH:mm')}"></td>
                 <td th:text="${#temporals.format(invite.expiresAt, 'dd.MM.yyyy HH:mm')}"></td>
                 <td>
-                    <span th:if="${invite.valid}" class="badge badge-active">Активен</span>
-                    <span th:if="${invite.revoked}" class="badge badge-revoked">Отозван</span>
-                    <span th:if="${!invite.valid && !invite.revoked}" class="badge badge-expired">Истёк</span>
+                    <span th:switch="${invite.status.name()}">
+                        <span th:case="'ACTIVE'"  class="badge badge-active">Активен</span>
+                        <span th:case="'USED'"    class="badge badge-used">Использован</span>
+                        <span th:case="'EXPIRED'" class="badge badge-expired">Истёк</span>
+                        <span th:case="'REVOKED'" class="badge badge-revoked">Отозван</span>
+                    </span>
                 </td>
                 <td>
-                    <form th:if="${invite.valid}"
+                    <form th:if="${invite.status.name() == 'ACTIVE'}"
                           th:action="@{/invites/{id}/revoke(id=${invite.id})}"
                           method="post" style="display:inline">
                         <button type="submit" class="btn btn-danger btn-small"
