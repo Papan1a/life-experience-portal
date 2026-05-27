@@ -49,6 +49,11 @@ public class ActivityController {
                                  Model model) {
         Activity activity = catalogService.getVisibleActivity(id);
         model.addAttribute("activity", activity);
+
+        boolean canEdit = principal != null &&
+                (principal.isAdmin() || activity.getCreatedBy().equals(principal.getUserId()));
+        model.addAttribute("canEdit", canEdit);
+
         model.addAttribute("variants", catalogService.getVisibleVariants(id));
         model.addAttribute("similar", catalogService.getSimilarActivities(id, activity.getCategoryId(), 5));
 

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorate="~{_layout}">
 <head>
     <title>Каталог</title>
@@ -8,7 +9,14 @@
 <body>
 <main layout:fragment="content" class="app-layout">
 
-    <h1 class="page-title">Каталог активностей</h1>
+    <div class="flex justify-between align-center mb-4">
+        <h1 class="page-title" style="margin-bottom: 0;">Каталог активностей</h1>
+        <a sec:authorize="isAuthenticated()"
+           href="/activities/new"
+           class="btn btn-primary btn-small">
+            + Предложить активность
+        </a>
+    </div>
 
     <!-- ===== Фильтры ===== -->
     <div class="card mb-4" id="catalog-filters">

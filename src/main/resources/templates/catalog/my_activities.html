@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{_layout}">
+<head>
+    <title>Мои активности</title>
+</head>
+<body>
+<main layout:fragment="content" class="app-layout">
+
+    <div class="flex justify-between align-center mb-4">
+        <h1 class="page-title" style="margin-bottom: 0;">Мои активности</h1>
+        <a href="/activities/new" class="btn btn-primary btn-small">+ Предложить активность</a>
+    </div>
+
+    <!-- Пустой список -->
+    <div th:if="${activities.isEmpty()}" class="card text-muted text-center">
+        <p>Вы ещё не создавали активности.</p>
+    </div>
+
+    <!-- Мои активности -->
+    <div th:each="activity : ${activities}" class="card mb-3">
+        <div class="flex justify-between align-center">
+            <h3 style="margin-bottom: 4px;">
+                <a th:href="@{/activities/{id}(id=${activity.id})}"
+                   th:text="${activity.title}"
+                   style="color: var(--color-text); text-decoration: none;">
+                    Название
+                </a>
+            </h3>
+            <div class="flex gap-2">
+                <span class="badge"
+                      th:classappend="${activity.status == 'ACTIVE'} ? 'badge-active' : 'badge-expired'"
+                      th:text="${activity.status}">ACTIVE</span>
+                <a th:href="@{/activities/{id}/edit(id=${activity.id})}"
+                   class="btn btn-secondary btn-small">Редактировать</a>
+            </div>
+        </div>
+        <p class="text-muted" style="font-size: 0.85rem; margin: 8px 0;"
+           th:text="${#strings.abbreviate(activity.description, 150)}"></p>
+
+        <!-- Варианты этой активности -->
+        <div th:if="${variantsByActivity[activity.id] != null && !variantsByActivity[activity.id].isEmpty()}"
+             style="margin-top: 8px; border-top: 1px solid var(--color-border); padding-top: 8px;">
+            <span class="text-muted" style="font-size: 0.8rem;">Варианты:</span>
+            <div th:each="v : ${variantsByActivity[activity.id]}"
+                 class="flex justify-between align-center"
+                 style="font-size: 0.85rem; padding: 4px 0;">
+                <a th:href="@{/activities/{aid}/variants/{vid}(aid=${activity.id},vid=${v.id})}"
+                   th:text="${v.title}"
+                   style="color: var(--color-primary); text-decoration: none;">Вариант</a>
+                <a th:href="@{/activities/{aid}/variants/{vid}/edit(aid=${activity.id},vid=${v.id})}"
+                   class="btn btn-secondary btn-small">Редактировать</a>
+            </div>
+        </div>
+        <div style="margin-top: 8px;">
+            <a th:href="@{/activities/{id}/variants/new(id=${activity.id})}"
+               class="btn btn-secondary btn-small">+ Добавить вариант</a>
+        </div>
+    </div>
+
+    <!-- Варианты к чужим активностям -->
+    <div th:if="${!variantsOnOthers.isEmpty()}" class="card mt-4">
+        <h2 style="font-size: 1.1rem; margin-bottom: 12px;">Мои варианты к чужим активностям</h2>
+        <div th:each="v : ${variantsOnOthers}"
+             class="flex justify-between align-center mb-2"
+             style="padding-bottom: 8px; border-bottom: 1px solid var(--color-border);">
+            <a th:href="@{/activities/{aid}/variants/{vid}(aid=${v.activityId},vid=${v.id})}"
+               th:text="${v.title}"
+               style="color: var(--color-primary); text-decoration: none;">Вариант</a>
+            <a th:href="@{/activities/{aid}/variants/{vid}/edit(aid=${v.activityId},vid=${v.id})}"
+               class="btn btn-secondary btn-small">Редактировать</a>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>

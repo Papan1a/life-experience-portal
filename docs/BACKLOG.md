@@ -14,7 +14,6 @@
 
 | # | Задача | Приоритет | Примечания |
 |---|---|---|---|
-| | 16 | Точки входа для создания активностей (Issue #2) | Высокий | [План](tasks/issue-02-activity-creation.md) |
 | | 10 | Логин по email регистронезависимый (Issue #3) | Средний | [План](tasks/issue-03-case-insensitive-login.md) |
 | | 12 | Выровнять кнопки на странице активности (Issue #9) | Низкий | [План](tasks/issue-09-buttons-alignment.md) |
 | | 13 | Аватар-заглушка при отсутствии фото (Issue #10) | Низкий | [План](tasks/issue-10-default-avatar.md) |
@@ -83,6 +82,7 @@
 | 5 | Тесты на рендеринг HTMX-URL в шаблонах | `HtmxTemplateRenderingTest.java` | 26.05.2026 |
 | 9 | Одноразовые инвайты + лимит 5 активных (Issues #1, #7) | `V6__invite_one_shot.sql`, `InviteStatus.java`, `Invite.java`, `InviteRepository.java`, `InviteService.java`, `UserService.java`, `InviteController.java`, `invite/list.html`, `invite/show.html`, `main.css`, `AuthIntegrationTest.java` | 27.05.2026 |
 | 11 | "Мой опыт": названия вместо UUID (Issue #8) | `ExperiencePageController.java` | 27.05.2026 |
+| 16 | Точки входа для создания активностей (Issue #2) | `ActivityController.java`, `index.html`, `activity.html`, `MyActivitiesController.java`, `my_activities.html`, `_layout.html`, `CatalogService.java`, `MyActivitiesIntegrationTest.java` | 27.05.2026 |
 
 ---
 

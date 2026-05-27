@@ -156,6 +156,11 @@ public class CatalogService {
     // ---- Variants ----
 
     @Transactional(readOnly = true)
+    public List<Variant> getVariantsByUser(UUID userId) {
+        return (List<Variant>) variantRepository.findByCreatedBy(userId);
+    }
+
+    @Transactional(readOnly = true)
     public List<Variant> getVisibleVariants(UUID activityId) {
         return variantRepository.findVisibleByActivity(activityId);
     }
