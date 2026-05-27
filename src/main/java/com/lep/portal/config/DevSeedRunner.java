@@ -24,8 +24,8 @@ import org.springframework.stereotype.Component;
  * <p>
  * Seed content:
  * <ul>
- *   <li>1 admin — admin@dev.test / admin123</li>
- *   <li>2 regular users — user1@dev.test, user2@dev.test (both user123)</li>
+ *   <li>1 admin — admin@admin / admin</li>
+ *   <li>2 regular users — 1@1 / 1 and 2@2 / 2</li>
  *   <li>1 invite with predictable code {@code test-invite-001} (expires +365d)</li>
  *   <li>5 activities across 4 categories, with 5 variants and 5 tags</li>
  * </ul>
@@ -64,9 +64,9 @@ public class DevSeedRunner implements ApplicationRunner {
         log.info("=== DevSeedRunner: seeding demo data ===");
 
         // ---- 1. Users ----
-        UUID adminId = insertUser("admin@dev.test", "admin123", "Admin Dev", true);
-        UUID user1Id = insertUser("user1@dev.test", "user123", "Анна Тестова", false);
-        UUID user2Id = insertUser("user2@dev.test", "user123", "Борис Тестов", false);
+        UUID adminId = insertUser("admin@admin", "admin", "Admin Dev", true);
+        UUID user1Id = insertUser("1@1", "1", "Анна Тестова", false);
+        UUID user2Id = insertUser("2@2", "2", "Борис Тестов", false);
 
         log.info("Users seeded: admin={}, user1={}, user2={}", adminId, user1Id, user2Id);
 
