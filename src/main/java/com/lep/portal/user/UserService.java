@@ -30,8 +30,10 @@ public class UserService {
     }
 
     public User register(RegistrationForm form) {
+        String normalizedEmail = form.getEmail().trim().toLowerCase();
+
         // Check email uniqueness for non-deleted users
-        if (userRepository.emailExists(form.getEmail())) {
+        if (userRepository.emailExists(normalizedEmail)) {
             throw new IllegalArgumentException("Email уже используется");
         }
 
@@ -39,7 +41,7 @@ public class UserService {
         Invite invite = inviteService.validateForRegistration(form.getInviteCode());
 
         User user = new User();
-        user.setEmail(form.getEmail().toLowerCase().trim());
+        user.setEmail(normalizedEmail);
         user.setPasswordHash(passwordEncoder.encode(form.getPassword()));
         user.setDisplayName(form.getDisplayName().trim());
         user.setInvitedByUserId(invite.getCreatedBy());
