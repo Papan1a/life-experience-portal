@@ -30,8 +30,11 @@
 
             <div class="profile-info">
                 <h2 th:text="${user.displayName}">Имя</h2>
-                <p th:if="${user.bio}" th:text="${user.bio}"></p>
-                <p th:unless="${user.bio}" class="text-muted">Био не заполнено</p>
+                <p th:if="${user.bio}" th:text="${user.bio}" style="font-size: 1.05rem; line-height: 1.5;"></p>
+                <div class="text-muted mt-2" style="font-size: 0.9rem;">
+                    <span>📧 </span>
+                    <span th:text="${user.email}">email@example.com</span>
+                </div>
             </div>
         </div>
 

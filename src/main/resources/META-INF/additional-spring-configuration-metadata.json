@@ -1,0 +1,57 @@
+{
+  "properties": [
+    {
+      "name": "r2.endpoint",
+      "type": "java.lang.String",
+      "description": "Cloudflare R2 endpoint URL."
+    },
+    {
+      "name": "r2.bucket",
+      "type": "java.lang.String",
+      "description": "Cloudflare R2 bucket name."
+    },
+    {
+      "name": "r2.public-base-url",
+      "type": "java.lang.String",
+      "description": "Public base URL for R2 bucket (e.g. custom domain)."
+    },
+    {
+      "name": "r2.access-key-id",
+      "type": "java.lang.String",
+      "description": "Cloudflare R2 access key ID."
+    },
+    {
+      "name": "r2.secret-access-key",
+      "type": "java.lang.String",
+      "description": "Cloudflare R2 secret access key."
+    },
+    {
+      "name": "app.avatar-max-bytes",
+      "type": "java.lang.Long",
+      "description": "Maximum avatar file size in bytes.",
+      "defaultValue": 2097152
+    },
+    {
+      "name": "app.invite.ttl-days",
+      "type": "java.lang.Integer",
+      "description": "Invite time-to-live in days.",
+      "defaultValue": 7
+    },
+    {
+      "name": "app.dev-seed.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable dev seed data on startup.",
+      "defaultValue": false
+    },
+    {
+      "name": "admin-bootstrap.email",
+      "type": "java.lang.String",
+      "description": "Admin email to bootstrap on first run."
+    },
+    {
+      "name": "admin-bootstrap.password",
+      "type": "java.lang.String",
+      "description": "Admin password to bootstrap on first run."
+    }
+  ]
+}

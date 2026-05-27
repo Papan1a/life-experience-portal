@@ -23,7 +23,10 @@
             <div style="flex: 1;">
                 <p th:if="${profileUser.bio}" th:text="${profileUser.bio}"
                    style="font-size: 1.05rem; line-height: 1.5;"></p>
-                <p th:unless="${profileUser.bio}" class="text-muted">Био не заполнено</p>
+                <div th:if="${isOwnProfile}" class="text-muted mt-2" style="font-size: 0.9rem;">
+                    <span>📧 </span>
+                    <span th:text="${profileUser.email}">email@example.com</span>
+                </div>
             </div>
         </div>
 

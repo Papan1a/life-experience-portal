@@ -10,6 +10,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.jdbc.core.convert.JdbcCustomConversions;
+import org.springframework.lang.NonNull;
 
 import com.lep.portal.experience.ExperienceStatus;
 
@@ -35,7 +36,8 @@ public class JdbcConvertersConfig {
     @ReadingConverter
     static class PgObjectToString implements Converter<PGobject, String> {
         @Override
-        public String convert(PGobject src) {
+        @NonNull
+        public String convert(@NonNull PGobject src) {
             return src.getValue();
         }
     }
@@ -47,7 +49,8 @@ public class JdbcConvertersConfig {
     @WritingConverter
     static class ExperienceStatusToPgObject implements Converter<ExperienceStatus, PGobject> {
         @Override
-        public PGobject convert(ExperienceStatus source) {
+        @NonNull
+        public PGobject convert(@NonNull ExperienceStatus source) {
             PGobject obj = new PGobject();
             obj.setType("experience_status");
             try {
@@ -66,7 +69,8 @@ public class JdbcConvertersConfig {
     @ReadingConverter
     static class PgObjectToExperienceStatus implements Converter<PGobject, ExperienceStatus> {
         @Override
-        public ExperienceStatus convert(PGobject source) {
+        @NonNull
+        public ExperienceStatus convert(@NonNull PGobject source) {
             return ExperienceStatus.valueOf(source.getValue());
         }
     }

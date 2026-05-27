@@ -24,7 +24,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import com.lep.portal.invite.InviteRepository;
 import com.lep.portal.user.User;
 import com.lep.portal.user.UserRepository;
 
@@ -53,8 +52,6 @@ public class CatalogIntegrationTest {
 
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private InviteRepository inviteRepository;
     @Autowired
     private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
     @Autowired

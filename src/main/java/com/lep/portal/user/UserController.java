@@ -1,6 +1,5 @@
 package com.lep.portal.user;
 
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,12 +24,9 @@ import jakarta.validation.Valid;
 public class UserController {
 
     private final UserService userService;
-    private final AuthenticationManager authenticationManager;
 
-    public UserController(UserService userService,
-                          AuthenticationManager authenticationManager) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.authenticationManager = authenticationManager;
     }
 
     @GetMapping("/register")
@@ -82,11 +78,7 @@ public class UserController {
                     SecurityContextHolder.getContext());
 
             return "redirect:/";
-        } catch (InvalidInviteException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            redirectAttributes.addFlashAttribute("registrationForm", form);
-            return "redirect:/register?code=" + form.getInviteCode();
-        } catch (IllegalArgumentException e) {
+        } catch (InvalidInviteException | IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             redirectAttributes.addFlashAttribute("registrationForm", form);
             return "redirect:/register?code=" + form.getInviteCode();
