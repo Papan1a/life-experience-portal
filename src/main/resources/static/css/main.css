@@ -46,6 +46,8 @@
     --shadow-lg: 0 8px 28px rgba(20,40,20,0.14);
 }
 
+html { scrollbar-gutter: stable; }
+
 body {
     font-family: var(--font-body);
     font-size: 16px;
@@ -164,6 +166,24 @@ code, pre, kbd, samp {
 .form-error {
     font-size: 0.8rem;
     color: var(--color-error);
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+    resize: none;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 /* ---- Buttons ---- */
@@ -501,6 +521,12 @@ code, pre, kbd, samp {
 .app-grid:has(.sidebar-right:empty) { grid-template-columns: 230px minmax(0, 1fr); }
 .app-main { min-width: 0; }
 .sidebar-left, .sidebar-right { position: sticky; top: 74px; }
+.sidebar-left {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 94px);
+}
+.sidebar-bottom { margin-top: auto; }
 
 /* ---- Left navigation ---- */
 .side-nav {
@@ -526,14 +552,14 @@ code, pre, kbd, samp {
 
 .btn-create {
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    margin-top: 14px; padding: 12px;
+    margin-top: 7px; padding: 12px;
     background: var(--color-primary); color: #fff;
     border-radius: var(--radius-lg);
     font-family: var(--font-head); font-weight: 600;
     text-decoration: none; box-shadow: var(--shadow);
 }
 .btn-create:hover { background: var(--color-primary-hover); }
-.sidebar-illu { margin-top: 16px; text-align: center; }
+.sidebar-illu { margin-top: 8px; text-align: center; }
 .sidebar-illu img { width: 100%; max-width: 180px; image-rendering: pixelated; }
 
 /* ---- Right sidebar cards ---- */
@@ -564,11 +590,33 @@ code, pre, kbd, samp {
 }
 .quote-card { background: var(--accent-mint); border: none; text-align: center; font-size: 0.88rem; }
 
+/* ---- Profile card ---- */
+.profile-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.profile-card .profile-avatar img {
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--color-primary-light);
+}
+.profile-card .profile-info h2 {
+    font-family: var(--font-head);
+    font-size: 1.3rem;
+    margin-bottom: 4px;
+}
+.profile-actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 8px;
+}
+
 /* ---- Category chips ---- */
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
 .chip {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 14px; border-radius: 999px;
+    padding: 4px 10px; border-radius: 999px;
     background: var(--color-surface); border: 1px solid var(--color-border);
     color: var(--color-text); font-size: 0.85rem; font-weight: 500;
     text-decoration: none; cursor: pointer;

@@ -10,8 +10,8 @@
         <button type="submit"
                 class="btn btn-small"
                 th:classappend="${bookmark != null} ? 'btn-primary' : 'btn-secondary'">
-            <th:block th:if="${bookmark != null}">🔖 Сохранено</th:block>
-            <th:block th:unless="${bookmark != null}">🔖 Сохранить</th:block>
+            <th:block th:if="${bookmark != null}">🔖 В избранном</th:block>
+            <th:block th:unless="${bookmark != null}">🔖 В избранное</th:block>
         </button>
     </form>
 </div>

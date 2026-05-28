@@ -106,7 +106,7 @@
         <aside class="sidebar-left">
             <nav class="side-nav">
                 <a href="/">Каталог</a>
-                <a href="/saved">Сохранённое</a>
+                <a href="/saved">Избранное</a>
                 <a href="/my-experiences">Мой опыт</a>
                 <a href="/my-activities">Мои активности</a>
                 <a href="/invites">Приглашения</a>
@@ -114,9 +114,13 @@
                 <a class="disabled" title="Скоро">Подписки <span class="soon-badge">скоро</span></a>
                 <a sec:authorize="hasRole('ADMIN')" href="/admin">Админ</a>
             </nav>
-            <a href="/activities/new" class="btn-create">+ Создать активность</a>
-            <div class="sidebar-illu">
-                <img th:src="@{/images/illustrations/create_activity.png}" alt=""/>
+            <div class="sidebar-bottom">
+                <th:block layout:fragment="sidebar-action">
+                    <a href="/activities/new" class="btn-create">+ Создать активность</a>
+                </th:block>
+                <div class="sidebar-illu">
+                    <img th:src="@{/images/illustrations/create_activity.png}" alt=""/>
+                </div>
             </div>
         </aside>
 

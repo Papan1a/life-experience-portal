@@ -38,7 +38,7 @@
 
             <div class="card-grid" th:unless="${page.activities().isEmpty()}">
                 <div th:each="activity : ${page.activities()}" class="activity-card">
-                    <span class="bookmark-star" title="Сохранение доступно на странице активности">
+                    <span class="bookmark-star" title="Добавление в избранное доступно на странице активности">
                         <img th:src="@{/images/icons/star_unpressed.png}" alt=""/>
                     </span>
                     <th:block th:each="cat : ${categories}" th:if="${cat.id == activity.categoryId}">

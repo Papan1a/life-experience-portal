@@ -3,16 +3,16 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{_layout}">
 <head>
-    <title>Сохранённое</title>
+    <title>Избранное</title>
 </head>
 <body>
-<main layout:fragment="content" class="app-layout">
+<main layout:fragment="content">
 
-    <h1 class="page-title" style="margin-bottom: 24px;">🔖 Сохранённое</h1>
+    <h1 class="page-title" style="margin-bottom: 24px;">🔖 Избранное</h1>
 
     <div th:if="${savedItems.isEmpty()}">
         <div class="card text-center text-muted" style="padding: 48px 24px;">
-            <p style="font-size: 1.1rem;">У вас пока нет сохранённых активностей.</p>
+            <p style="font-size: 1.1rem;">У вас пока нет избранных активностей.</p>
             <p style="margin-top: 8px;">
                 <a href="/" class="btn btn-primary">Перейти в каталог</a>
             </p>

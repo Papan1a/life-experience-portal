@@ -109,7 +109,7 @@
                    hx-get="/tags/suggest"
                    hx-trigger="keyup changed delay:200ms"
                    hx-target="#tag-suggestions"
-                   hx-include="[name='tags']"/>
+                   hx-vals="js:{q: event.target.value.split(',').pop().trim()}"/>
             <datalist id="tag-suggestions">
                 <option th:each="t : ${suggestions}" th:value="${t.slug}" th:text="${t.name}"/>
             </datalist>
