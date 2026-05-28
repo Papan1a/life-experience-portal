@@ -7,45 +7,98 @@
     <title>Каталог</title>
 </head>
 <body>
-<main layout:fragment="content" class="app-layout">
+<main class="app-main" layout:fragment="content">
 
-    <div class="flex justify-between align-center mb-4">
+    <div class="catalog-head">
         <h1 class="page-title" style="margin-bottom: 0;">Каталог активностей</h1>
-        <a sec:authorize="isAuthenticated()"
-           href="/activities/new"
-           class="btn btn-primary btn-small">
-            + Предложить активность
+    </div>
+
+    <!-- ===== Чипсы-фильтры категорий ===== -->
+    <div class="chips mb-4">
+        <a th:href="@{/(page=1)}"
+           class="chip" th:classappend="${currentCategory == null} ? 'active' : ''">
+            <img class="chip-icon" th:src="@{/images/categories/all.png}" alt=""/>
+            <span>Все</span>
+        </a>
+        <a th:each="cat : ${categories}"
+           th:href="@{/(category=${cat.slug},page=1)}"
+           class="chip"
+           th:classappend="${currentCategory != null && currentCategory.equals(cat.slug)} ? 'active' : ''">
+            <img class="chip-icon" th:src="@{'/images/categories/' + ${cat.slug} + '.png'}" alt=""/>
+            <span th:text="${cat.labelRu}">Спорт</span>
         </a>
     </div>
 
-    <!-- ===== Фильтры ===== -->
-    <div class="card mb-4" id="catalog-filters">
-        <div class="filter-bar flex gap-2 align-center" style="flex-wrap: wrap;">
-            <!-- Категории -->
-            <div class="filter-group">
-                <a th:href="@{/(page=1)}"
-                   th:classappend="${currentCategory == null} ? 'btn btn-primary btn-small' : 'btn btn-secondary btn-small'">
-                    Все
-                </a>
-                <a th:each="cat : ${categories}"
-                   th:href="@{/(category=${cat.slug},page=1)}"
-                   th:text="${cat.labelRu}"
-                   th:classappend="${currentCategory != null && currentCategory.equals(cat.slug)}
-                        ? 'btn btn-primary btn-small'
-                        : 'btn btn-secondary btn-small'">
-                    Спорт
-                </a>
+    <!-- ===== Карточки активностей (HTMX target) ===== -->
+    <th:block th:fragment="catalog-content">
+        <div id="catalog-results">
+            <div th:if="${page.activities().isEmpty()}" class="card placeholder-card">
+                Нет активностей по выбранным фильтрам.
+            </div>
+
+            <div class="card-grid" th:unless="${page.activities().isEmpty()}">
+                <div th:each="activity : ${page.activities()}" class="activity-card">
+                    <span class="bookmark-star" title="Сохранение доступно на странице активности">
+                        <img th:src="@{/images/icons/star_unpressed.png}" alt=""/>
+                    </span>
+                    <th:block th:each="cat : ${categories}" th:if="${cat.id == activity.categoryId}">
+                        <img class="activity-card-icon"
+                             th:src="@{'/images/categories/' + ${cat.slug} + '.png'}" alt=""/>
+                    </th:block>
+                    <a class="activity-card-title"
+                       th:href="@{/activities/{id}(id=${activity.id})}"
+                       th:text="${activity.title}">Название</a>
+                    <div class="activity-card-meta">
+                        <span th:if="${activity.costTier != null}" th:text="${activity.costTier}">free</span>
+                        <span th:if="${activity.estimatedDuration != null}"
+                              th:text="${activity.estimatedDuration}">1 час</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== Пагинация ===== -->
+            <div th:if="${page.totalPages() > 1}"
+                 class="flex gap-2 align-center justify-between mt-4">
+                <th:block th:if="${page.hasPrev()}">
+                    <a th:href="@{/(category=${currentCategory},tags=${currentTags},page=${page.currentPage() - 1})}"
+                       class="btn-show-more"
+                       hx-get hx-target="#catalog-results" hx-swap="outerHTML">
+                        ← Назад
+                    </a>
+                </th:block>
+                <span th:unless="${page.hasPrev()}"></span>
+
+                <span class="text-muted" style="font-size: 0.85rem;">
+                    Страница <strong th:text="${page.currentPage()}">1</strong>
+                    из <strong th:text="${page.totalPages()}">1</strong>
+                    (всего: <span th:text="${page.totalCount()}">0</span>)
+                </span>
+
+                <th:block th:if="${page.hasNext()}">
+                    <a th:href="@{/(category=${currentCategory},tags=${currentTags},page=${page.currentPage() + 1})}"
+                       class="btn-show-more"
+                       hx-get hx-target="#catalog-results" hx-swap="outerHTML">
+                        Показать ещё →
+                    </a>
+                </th:block>
+                <span th:unless="${page.hasNext()}"></span>
             </div>
         </div>
-    </div>
+    </th:block>
 
-    <!-- ===== Friends-секция "Что делают другие" ===== -->
-    <div th:if="${!friendsActivity.isEmpty()}" class="card mb-4">
-        <h2 style="font-size: 1.1rem; margin-bottom: 12px;">Что делают другие</h2>
-        <div th:each="fa : ${friendsActivity}" class="mb-2"
-             style="padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: 0.9rem;">
-            <strong th:text="${fa.displayName()}">Имя</strong>
-            <span class="text-muted">
+</main>
+
+<!-- ===== Правый сайдбар: друзья + заглушки ===== -->
+<aside class="sidebar-right" layout:fragment="rightbar">
+    <div class="side-card">
+        <h3>Что делают другие</h3>
+        <div th:if="${friendsActivity.isEmpty()}" class="text-muted" style="font-size: 0.85rem;">
+            Пока тихо — никто ничего не отмечал.
+        </div>
+        <div th:each="fa : ${friendsActivity}" class="friend-item">
+            <img class="friend-avatar" th:src="@{/images/avatar-default.png}" alt=""/>
+            <span>
+                <strong th:text="${fa.displayName()}">Имя</strong>
                 <th:block th:switch="${fa.status()}">
                     <span th:case="'WANT_TO_TRY'">хочет попробовать</span>
                     <span th:case="'TRIED'">пробовал(а)</span>
@@ -53,79 +106,22 @@
                     <span th:case="'INTERESTING'">интересуется</span>
                     <span th:case="*">отметил(а)</span>
                 </th:block>
+                <a th:href="@{/activities/{id}(id=${fa.activityId()})}"
+                   th:text="${fa.activityTitle()}">активность</a>
             </span>
-            <a th:href="@{/activities/{id}(id=${fa.activityId()})}"
-               th:text="${fa.activityTitle()}"
-               style="color: var(--color-primary); text-decoration: none;">
-                активность
-            </a>
         </div>
+        <a th:href="@{/users}" class="side-card-link">Все друзья →</a>
     </div>
 
-    <!-- ===== Список активностей (HTMX target) ===== -->
-    <th:block th:fragment="catalog-content">
-        <div id="catalog-results">
-            <th:block th:if="${page.activities().isEmpty()}">
-                <div class="card text-center text-muted">
-                    <p>Нет активностей по выбранным фильтрам.</p>
-                </div>
-            </th:block>
+    <div class="side-card placeholder-card">
+        <h3 style="color: var(--color-text);">Ближайшие события</h3>
+        <p>Здесь появятся события друзей <span class="soon-badge">скоро</span></p>
+    </div>
 
-            <div th:each="activity : ${page.activities()}" class="card activity-card">
-                <div class="flex justify-between align-center">
-                    <h3 style="margin-bottom: 4px;">
-                        <a th:href="@{/activities/{id}(id=${activity.id})}"
-                           th:text="${activity.title}"
-                           style="color: var(--color-text); text-decoration: none;">
-                            Название
-                        </a>
-                    </h3>
-                    <span class="badge badge-active" th:text="${activity.complexity}">medium</span>
-                </div>
-                <p class="text-muted" style="font-size: 0.9rem; margin: 8px 0;"
-                   th:text="${#strings.abbreviate(activity.description, 200)}">
-                    Краткое описание активности до 200 символов...
-                </p>
-                <div class="flex gap-2 align-center text-muted" style="font-size: 0.8rem;">
-                    <span th:if="${activity.costTier != null}" th:text="'💰 ' + ${activity.costTier}">free</span>
-                    <span th:if="${activity.estimatedDuration != null}"
-                          th:text="'⏱ ' + ${activity.estimatedDuration}">1 час</span>
-                </div>
-            </div>
-        </div>
+    <div class="side-card quote-card">
+        «Свой Круг» — место, где друзья делятся тем, что стоит попробовать.
+    </div>
+</aside>
 
-        <!-- ===== Пагинация ===== -->
-        <div th:if="${page.totalPages() > 1}" class="flex gap-2 align-center justify-between mt-4 mb-4">
-            <th:block th:if="${page.hasPrev()}">
-                <a th:href="@{/(category=${currentCategory},tags=${currentTags},page=${page.currentPage() - 1})}"
-                   class="btn btn-secondary btn-small"
-                   hx-get
-                   hx-target="#catalog-results"
-                   hx-swap="outerHTML">
-                    ← Назад
-                </a>
-            </th:block>
-            <span th:if="${!page.hasPrev()}"></span>
-
-            <span class="text-muted" style="font-size: 0.85rem;">
-                Страница <strong th:text="${page.currentPage()}">1</strong>
-                из <strong th:text="${page.totalPages()}">1</strong>
-                (всего: <span th:text="${page.totalCount()}">0</span>)
-            </span>
-
-            <th:block th:if="${page.hasNext()}">
-                <a th:href="@{/(category=${currentCategory},tags=${currentTags},page=${page.currentPage() + 1})}"
-                   class="btn btn-secondary btn-small"
-                   hx-get
-                   hx-target="#catalog-results"
-                   hx-swap="outerHTML">
-                    Вперёд →
-                </a>
-            </th:block>
-            <span th:if="${!page.hasNext()}"></span>
-        </div>
-    </th:block>
-
-</main>
 </body>
 </html>
