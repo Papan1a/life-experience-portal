@@ -43,10 +43,13 @@
             <tr th:each="invite : ${invites}">
                 <td><code th:text="${invite.code}"></code></td>
                 <td>
-                    <button th:if="${invite.status.name() == 'ACTIVE'}"
-                            th:data-link="${baseUrl + '/register?code=' + invite.code}"
-                            onclick="copyLink(this.dataset.link)"
-                            class="btn btn-secondary btn-small">Скопировать</button>
+                    <div class="flex gap-1" th:if="${invite.status.name() == 'ACTIVE'}">
+                        <a th:href="@{/invites/{id}(id=${invite.id})}"
+                           class="btn btn-secondary btn-small">Открыть</a>
+                        <button th:data-link="${baseUrl + '/register?code=' + invite.code}"
+                                onclick="copyLink(this.dataset.link)"
+                                class="btn btn-secondary btn-small">Скопировать</button>
+                    </div>
                 </td>
                 <td th:text="${#temporals.format(invite.createdAt, 'dd.MM.yyyy HH:mm')}"></td>
                 <td th:text="${#temporals.format(invite.expiresAt, 'dd.MM.yyyy HH:mm')}"></td>

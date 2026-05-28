@@ -293,7 +293,7 @@ T2.11 — POST /logout → сессия инвалидирована, после
 
 ```bash
 ./mvnw test -Dtest=AuthIntegrationTest
-# Ожидание: Tests run: 12, Failures: 0, Errors: 0
+# Ожидание: Tests run: 13, Failures: 0, Errors: 0
 ```
 
 **Если T2.4 падает** → проверь логику InviteService и передачу ошибки в модель.
