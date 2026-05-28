@@ -62,6 +62,49 @@
         </form>
     </div>
 
+    <!-- Change password -->
+    <div class="card mt-4">
+        <h2 style="font-size: 1.1rem; margin-bottom: 16px;">Изменить пароль</h2>
+        <div th:if="${passwordError}" class="alert alert-error mb-3" th:text="${passwordError}"></div>
+        <form th:action="@{/profile/password}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <div class="form-group">
+                <label>Текущий пароль</label>
+                <input type="password" name="currentPassword" class="form-control" required>
+            </div>
+            <div class="form-group mt-3">
+                <label>Новый пароль (мин. 8 символов)</label>
+                <input type="password" name="newPassword" class="form-control" required minlength="8">
+            </div>
+            <div class="form-group mt-3">
+                <label>Подтвердить новый пароль</label>
+                <input type="password" name="confirmPassword" class="form-control" required minlength="8">
+            </div>
+            <button type="submit" class="btn btn-primary mt-4">Изменить пароль</button>
+        </form>
+    </div>
+
+    <!-- Change email -->
+    <div class="card mt-4">
+        <h2 style="font-size: 1.1rem; margin-bottom: 16px;">Изменить email</h2>
+        <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 12px;">
+            Текущий: <strong th:text="${user.email}">email@example.com</strong>
+        </p>
+        <div th:if="${emailError}" class="alert alert-error mb-3" th:text="${emailError}"></div>
+        <form th:action="@{/profile/email}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <div class="form-group">
+                <label>Новый email</label>
+                <input type="email" name="newEmail" class="form-control" required>
+            </div>
+            <div class="form-group mt-3">
+                <label>Текущий пароль (для подтверждения)</label>
+                <input type="password" name="passwordConfirm" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary mt-4">Изменить email</button>
+        </form>
+    </div>
+
 </main>
 </body>
 </html>

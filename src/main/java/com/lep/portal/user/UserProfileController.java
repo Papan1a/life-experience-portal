@@ -7,8 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -163,6 +167,54 @@ public class UserProfileController {
             redirectAttributes.addFlashAttribute("error", "Ошибка обработки изображения: " + e.getMessage());
         }
 
+        return "redirect:/profile/edit";
+    }
+
+    @PostMapping("/profile/password")
+    public String changePassword(@AuthenticationPrincipal PortalUserDetails principal,
+                                 @RequestParam String currentPassword,
+                                 @RequestParam String newPassword,
+                                 @RequestParam String confirmPassword,
+                                 HttpServletRequest request,
+                                 RedirectAttributes ra) {
+        if (currentPassword.isBlank() || newPassword.isBlank() || confirmPassword.isBlank()) {
+            ra.addFlashAttribute("passwordError", "Все поля обязательны");
+            return "redirect:/profile/edit";
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            ra.addFlashAttribute("passwordError", "Пароли не совпадают");
+            return "redirect:/profile/edit";
+        }
+        try {
+            userService.changePassword(principal.getUserId(), currentPassword, newPassword);
+            SecurityContextHolder.clearContext();
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                session.invalidate();
+            }
+            ra.addFlashAttribute("success", "Пароль изменён. Войдите заново.");
+            return "redirect:/login";
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("passwordError", e.getMessage());
+        }
+        return "redirect:/profile/edit";
+    }
+
+    @PostMapping("/profile/email")
+    public String changeEmail(@AuthenticationPrincipal PortalUserDetails principal,
+                              @RequestParam String newEmail,
+                              @RequestParam String passwordConfirm,
+                              RedirectAttributes ra) {
+        if (newEmail.isBlank() || passwordConfirm.isBlank()) {
+            ra.addFlashAttribute("emailError", "Все поля обязательны");
+            return "redirect:/profile/edit";
+        }
+        try {
+            userService.changeEmail(principal.getUserId(), newEmail, passwordConfirm);
+            ra.addFlashAttribute("success", "Email изменён");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("emailError", e.getMessage());
+        }
         return "redirect:/profile/edit";
     }
 

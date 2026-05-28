@@ -89,9 +89,43 @@ public class UserService {
         userRepository.save(user);
     }
 
+    /**
+     * Административный сброс пароля без проверки текущего.
+     * Для пользовательской смены пароля — {@link #changePassword}.
+     */
     public void resetPassword(UUID userId, String newPassword) {
         User user = findActiveById(userId);
         user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    public void changePassword(UUID userId, String currentPassword, String newPassword) {
+        User user = findActiveById(userId);
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new IllegalArgumentException("Неверный текущий пароль");
+        }
+        if (passwordEncoder.matches(newPassword, user.getPasswordHash())) {
+            throw new IllegalArgumentException("Новый пароль должен отличаться от текущего");
+        }
+        if (newPassword.length() < 8) {
+            throw new IllegalArgumentException("Новый пароль должен содержать минимум 8 символов");
+        }
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    public void changeEmail(UUID userId, String newEmail, String currentPassword) {
+        User user = findActiveById(userId);
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new IllegalArgumentException("Неверный текущий пароль");
+        }
+        String normalized = newEmail.trim().toLowerCase();
+        if (userRepository.findByEmail(normalized)
+                .filter(u -> !u.getId().equals(userId))
+                .isPresent()) {
+            throw new IllegalArgumentException("Этот email уже занят");
+        }
+        user.setEmail(normalized);
         userRepository.save(user);
     }
 }

@@ -1,11 +1,9 @@
-# Issue #12 — Управление профилем: смена имени, пароля, email, фото
+# Issue #12 — Управление профилем: смена пароля и email
 
 ## Контекст
 
-Сейчас в `/profile/edit` есть: редактирование displayName, bio, загрузка аватара.
+В `/profile/edit` уже есть: редактирование displayName, bio, загрузка аватара.
 Нужно добавить: **смена пароля** и **смена email**.
-
-Фото уже реализовано. Смена ФИО — тоже есть. Фокус на двух новых формах.
 
 > Email verification (подтверждение по письму) **не делаем** — нет email-инфраструктуры в MVP.
 
@@ -14,6 +12,7 @@
 - `src/main/java/com/lep/portal/user/UserService.java`
 - `src/main/java/com/lep/portal/user/UserProfileController.java`
 - `src/main/resources/templates/user/edit.html`
+- `src/test/java/com/lep/portal/user/UserServiceTest.java` _(новый)_
 
 ---
 
@@ -26,6 +25,9 @@ public void changePassword(UUID userId, String currentPassword, String newPasswo
     User user = findActiveById(userId);
     if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
         throw new IllegalArgumentException("Неверный текущий пароль");
+    }
+    if (passwordEncoder.matches(newPassword, user.getPasswordHash())) {
+        throw new IllegalArgumentException("Новый пароль должен отличаться от текущего");
     }
     if (newPassword.length() < 8) {
         throw new IllegalArgumentException("Новый пароль должен содержать минимум 8 символов");
@@ -44,7 +46,9 @@ public void changeEmail(UUID userId, String newEmail, String currentPassword) {
         throw new IllegalArgumentException("Неверный текущий пароль");
     }
     String normalized = newEmail.trim().toLowerCase();
-    if (userRepository.findByEmail(normalized).isPresent()) {
+    if (userRepository.findByEmail(normalized)
+            .filter(u -> !u.getId().equals(userId))
+            .isPresent()) {
         throw new IllegalArgumentException("Этот email уже занят");
     }
     user.setEmail(normalized);
@@ -52,9 +56,24 @@ public void changeEmail(UUID userId, String newEmail, String currentPassword) {
 }
 ```
 
+### `resetPassword` — добавить Javadoc
+
+Существующий метод `resetPassword(UUID userId, String newPassword)` на строке 92 не трогаем,
+но добавляем Javadoc чтобы разграничить семантику:
+
+```java
+/**
+ * Административный сброс пароля без проверки текущего.
+ * Для пользовательской смены пароля — {@link #changePassword}.
+ */
+public void resetPassword(UUID userId, String newPassword) { ... }
+```
+
 ---
 
 ## 2. UserProfileController — два новых обработчика
+
+`SecurityConfig` не изменяется — новые эндпоинты попадают под `.anyRequest().authenticated()`.
 
 ```java
 @PostMapping("/profile/password")
@@ -62,14 +81,25 @@ public String changePassword(@AuthenticationPrincipal PortalUserDetails principa
                              @RequestParam String currentPassword,
                              @RequestParam String newPassword,
                              @RequestParam String confirmPassword,
+                             HttpServletRequest request,
                              RedirectAttributes ra) {
+    if (currentPassword.isBlank() || newPassword.isBlank() || confirmPassword.isBlank()) {
+        ra.addFlashAttribute("passwordError", "Все поля обязательны");
+        return "redirect:/profile/edit";
+    }
     if (!newPassword.equals(confirmPassword)) {
         ra.addFlashAttribute("passwordError", "Пароли не совпадают");
         return "redirect:/profile/edit";
     }
     try {
         userService.changePassword(principal.getUserId(), currentPassword, newPassword);
-        ra.addFlashAttribute("success", "Пароль изменён");
+        SecurityContextHolder.clearContext();
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        ra.addFlashAttribute("success", "Пароль изменён. Войдите заново.");
+        return "redirect:/login";
     } catch (IllegalArgumentException e) {
         ra.addFlashAttribute("passwordError", e.getMessage());
     }
@@ -81,6 +111,10 @@ public String changeEmail(@AuthenticationPrincipal PortalUserDetails principal,
                           @RequestParam String newEmail,
                           @RequestParam String passwordConfirm,
                           RedirectAttributes ra) {
+    if (newEmail.isBlank() || passwordConfirm.isBlank()) {
+        ra.addFlashAttribute("emailError", "Все поля обязательны");
+        return "redirect:/profile/edit";
+    }
     try {
         userService.changeEmail(principal.getUserId(), newEmail, passwordConfirm);
         ra.addFlashAttribute("success", "Email изменён");
@@ -89,6 +123,14 @@ public String changeEmail(@AuthenticationPrincipal PortalUserDetails principal,
     }
     return "redirect:/profile/edit";
 }
+```
+
+Импорты для контроллера:
+
+```java
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.security.core.context.SecurityContextHolder;
 ```
 
 ---
@@ -148,10 +190,28 @@ public String changeEmail(@AuthenticationPrincipal PortalUserDetails principal,
 
 ---
 
+## 4. Тесты — UserServiceTest
+
+Файл: `src/test/java/com/lep/portal/user/UserServiceTest.java`
+
+Сценарии:
+
+| # | Метод | Входные данные | Ожидаемый результат |
+|---|-------|---------------|---------------------|
+| 1 | `changePassword` | верный текущий пароль, новый ≥ 8 символов, отличается | пароль сохранён, `matches(newPassword, hash)` = true |
+| 2 | `changePassword` | неверный текущий пароль | `IllegalArgumentException("Неверный текущий пароль")` |
+| 3 | `changePassword` | новый пароль = текущему | `IllegalArgumentException("Новый пароль должен отличаться от текущего")` |
+| 4 | `changeEmail` | email занят другим пользователем | `IllegalArgumentException("Этот email уже занят")` |
+| 5 | `changeEmail` | пользователь отправляет свой же email | смена проходит без ошибки |
+
+---
+
 ## Проверка
 
 1. `/profile/edit` → смена пароля → неверный текущий пароль → ошибка на форме
 2. `/profile/edit` → смена пароля → правильный пароль, новые не совпадают → ошибка
-3. `/profile/edit` → смена пароля → всё верно → успешно, можно войти с новым паролем
-4. `/profile/edit` → смена email → занятый email → ошибка
-5. `/profile/edit` → смена email → всё верно → новый email отображается в профиле
+3. `/profile/edit` → смена пароля → новый = текущему → ошибка
+4. `/profile/edit` → смена пароля → всё верно → редирект на `/login`, войти со старым паролем нельзя
+5. `/profile/edit` → смена email → занятый email → ошибка
+6. `/profile/edit` → смена email → свой же email → успешно, без ошибки
+7. `/profile/edit` → смена email → новый email → отображается в профиле
