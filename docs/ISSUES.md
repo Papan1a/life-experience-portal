@@ -12,8 +12,6 @@
 
 <!-- Добавляй сюда первоначальные идеи -->
 
-5. Каталог активностей
-
 6. Добавить поиск активностей
 
 7. Разработать хранилище аватаров, добавить туда предзагруженные варианты.
@@ -64,6 +62,11 @@
 - **#28** — Карточка активности кликабельна целиком → [`tasks/issue-28-clickable-card.md`](tasks/issue-28-clickable-card.md)
 - **#25 + #29 + #30 + #31 + #18** — Эпик: раскладка и единый каркас страниц (топ-бар, скролл, ширина колонок, объединение профиля) → [`tasks/epic-layout-redesign.md`](tasks/epic-layout-redesign.md)
 - **#32** — Баг: на `/saved` отметка «В избранном» меняется не у той карточки (дубль `id`) → [`tasks/issue-32-bookmark-saved-toggle.md`](tasks/issue-32-bookmark-saved-toggle.md)
+- **#34** — Баг: создание активности молча не срабатывает при некоторых значениях сложности/стоимости (рассинхрон `<select>` с enum + невидимые ошибки валидации) → [`tasks/issue-34-create-activity-enum-mismatch.md`](tasks/issue-34-create-activity-enum-mismatch.md)
+- **#35** — Автотесты на «тихие» баги форм создания/редактирования (зависит от #34) → [`tasks/issue-35-form-validation-tests.md`](tasks/issue-35-form-validation-tests.md)
+- **#36** — Архдолг: переходы статусов в сервис + унификация slug/`parseTags`/`NotFoundException` (admin/catalog) → [`tasks/issue-36-status-transitions-service.md`](tasks/issue-36-status-transitions-service.md) _(из архитектурного аудита)_
+- **#37** — `@PreAuthorize` неактивна: включить `@EnableMethodSecurity` (или убрать аннотацию) → [`tasks/issue-37-method-security.md`](tasks/issue-37-method-security.md) _(из архитектурного аудита)_
+- **#38** — Вынести логику аватара из контроллера в `AvatarService` → [`tasks/issue-38-avatar-service.md`](tasks/issue-38-avatar-service.md) _(из архитектурного аудита)_
 
 ---
 

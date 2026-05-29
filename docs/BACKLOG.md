@@ -27,6 +27,11 @@
 | #26 | Раскладка категорий: минимизировать число строк | [`tasks/issue-26-category-layout.md`](tasks/issue-26-category-layout.md) | Косметика (CSS / порядок категорий) |
 | #28 | Карточка активности кликабельна целиком | [`tasks/issue-28-clickable-card.md`](tasks/issue-28-clickable-card.md) | Stretched link (`::after`); зона звёздочки неактивна под #33 |
 | #32 | Баг: на `/saved` отметка «В избранном» меняется не у той карточки | [`tasks/issue-32-bookmark-saved-toggle.md`](tasks/issue-32-bookmark-saved-toggle.md) | Дубль `id` → `<form>` корень + `hx-target="this"` |
+| #34 | Баг: создание активности молча не срабатывает (рассинхрон `<select>`↔enum) | [`tasks/issue-34-create-activity-enum-mismatch.md`](tasks/issue-34-create-activity-enum-mismatch.md) | Опции из `values()` + видимые ошибки валидации |
+| #35 | Автотесты на «тихие» баги форм (зависит от #34) | [`tasks/issue-35-form-validation-tests.md`](tasks/issue-35-form-validation-tests.md) | Инвариант: каждая опция select принимается сервером |
+| #36 | Архдолг: переходы статусов в сервис + унификация slug/`parseTags`/404 | [`tasks/issue-36-status-transitions-service.md`](tasks/issue-36-status-transitions-service.md) | Из аудита; связано с #1 (delete в сервисе) |
+| #37 | `@PreAuthorize` неактивна — включить `@EnableMethodSecurity` | [`tasks/issue-37-method-security.md`](tasks/issue-37-method-security.md) | Из аудита; проверить `ROLE_ADMIN` |
+| #38 | Вынести логику аватара в `AvatarService` | [`tasks/issue-38-avatar-service.md`](tasks/issue-38-avatar-service.md) | Из аудита; чистый рефактор, связан с #12/#7 |
 | #25, #29, #30, #31, #18 | Эпик: раскладка и единый каркас страниц | [`tasks/epic-layout-redesign.md`](tasks/epic-layout-redesign.md) | Делать одним заходом — правки в общем `main.css` конфликтуют |
 | — | Юнит-тесты сервисов | [`tasks/unit-tests-services.md`](tasks/unit-tests-services.md) | Из раздела «Идеи» |
 | — | R2 avatar URL — заглушка вместо реального URL | — | Высокий (prod), `UserProfileController.java`; связано с #7/#12-фото |
