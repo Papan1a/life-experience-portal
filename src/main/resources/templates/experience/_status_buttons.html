@@ -9,34 +9,34 @@
         <input type="hidden" name="activityId" th:value="${activityId}"/>
         <input type="hidden" name="variantId" th:value="${variantId}"/>
 
-        <button type="submit" name="status" value="INTERESTING"
-                th:classappend="${userExperience != null && userExperience.status.name() == 'INTERESTING'} ? 'btn-primary' : 'btn-secondary'"
+        <button type="submit" name="status"
+                th:with="active=${userExperience != null && userExperience.status.name() == 'INTERESTING'}"
+                th:value="${active} ? '' : 'INTERESTING'"
+                th:classappend="${active} ? 'btn-primary' : 'btn-secondary'"
                 class="btn btn-small">
             ✨ Интересно
         </button>
-        <button type="submit" name="status" value="WANT_TO_TRY"
-                th:classappend="${userExperience != null && userExperience.status.name() == 'WANT_TO_TRY'} ? 'btn-primary' : 'btn-secondary'"
+        <button type="submit" name="status"
+                th:with="active=${userExperience != null && userExperience.status.name() == 'WANT_TO_TRY'}"
+                th:value="${active} ? '' : 'WANT_TO_TRY'"
+                th:classappend="${active} ? 'btn-primary' : 'btn-secondary'"
                 class="btn btn-small">
             🎯 Хочу попробовать
         </button>
-        <button type="submit" name="status" value="TRIED"
-                th:classappend="${userExperience != null && userExperience.status.name() == 'TRIED'} ? 'btn-primary' : 'btn-secondary'"
+        <button type="submit" name="status"
+                th:with="active=${userExperience != null && userExperience.status.name() == 'TRIED'}"
+                th:value="${active} ? '' : 'TRIED'"
+                th:classappend="${active} ? 'btn-primary' : 'btn-secondary'"
                 class="btn btn-small">
             ✅ Пробовал(а)
         </button>
-        <button type="submit" name="status" value="WANT_REPEAT"
-                th:classappend="${userExperience != null && userExperience.status.name() == 'WANT_REPEAT'} ? 'btn-primary' : 'btn-secondary'"
+        <button type="submit" name="status"
+                th:with="active=${userExperience != null && userExperience.status.name() == 'WANT_REPEAT'}"
+                th:value="${active} ? '' : 'WANT_REPEAT'"
+                th:classappend="${active} ? 'btn-primary' : 'btn-secondary'"
                 class="btn btn-small">
             🔄 Хочу повторить
         </button>
-
-        <th:block th:if="${userExperience != null}">
-            <button type="submit" name="status" value=""
-                    class="btn btn-small btn-secondary"
-                    style="color: var(--color-error);">
-                ✕ Снять отметку
-            </button>
-        </th:block>
     </form>
 </div>
 </th:block>
