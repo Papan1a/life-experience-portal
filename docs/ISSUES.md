@@ -53,10 +53,8 @@
 
 - **#21** — Снять отметку повторным кликом (убрать кнопку «Снять отметку») → [`tasks/issue-21-status-toggle.md`](tasks/issue-21-status-toggle.md) · 🟡 **в работе** (BACKLOG → «В работе»)
 - **#1** — Удаление своих активностей и вариантов → [`tasks/issue-1-delete-content.md`](tasks/issue-1-delete-content.md)
-- **#4** — Бесконечная подгрузка карточек вместо «Показать ещё» → [`tasks/issue-4-infinite-scroll.md`](tasks/issue-4-infinite-scroll.md)
 - **#9** — Выровнять кнопки статусов и «В избранное» по высоте → [`tasks/issue-9-button-alignment.md`](tasks/issue-9-button-alignment.md)
 - **#12** — Управление профилем (имя/фото; пароль/email уже готовы) → [`tasks/issue-12-profile-management.md`](tasks/issue-12-profile-management.md)
-- **#16** — Редизайн страницы входа под стилистику портала → [`tasks/issue-16-login-redesign.md`](tasks/issue-16-login-redesign.md)
 - **#24** — Ошибка «Запрос не выполнен (400)» при вводе тегов → [`tasks/issue-24-tag-suggest-400.md`](tasks/issue-24-tag-suggest-400.md)
 - **#26** — Раскладка категорий: минимизировать число строк → [`tasks/issue-26-category-layout.md`](tasks/issue-26-category-layout.md)
 - **#28** — Карточка активности кликабельна целиком → [`tasks/issue-28-clickable-card.md`](tasks/issue-28-clickable-card.md)
@@ -83,6 +81,10 @@
 ~~22. Переименовать «Сохранить/Сохранённое» → «Избранное»~~ → выполнено 29.05.2026
 
 ~~14. На главной верхнее меню (LEP и кнопки) — закрепить сверху (sticky)~~ → Backlog #14 (выполнено 28.05.2026)
+
+~~4. Бесконечная подгрузка карточек вместо «Показать ещё»~~ → Backlog #4 (выполнено 29.05.2026)
+
+~~16. Редизайн страницы входа под стилистику портала~~ → Backlog #16 (выполнено 30.05.2026)
 
 ~~1. По одному приглашению можно регистрировать сколько угодно пользователей — нужна одноразовость + статусы инвайтов~~ → выполнено
 

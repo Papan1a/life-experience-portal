@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход — Life Experience Portal</title>
+    <title>Вход — Свой Круг</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body class="auth-page">
     <div class="auth-container">
-        <h1>Life Experience Portal</h1>
+        <img src="/images/logo.png" alt="Свой Круг" style="display:block;margin:0 auto 8px;height:60px;image-rendering:pixelated;">
+        <h1>Свой Круг</h1>
         <h2>Вход</h2>
 
         <div th:if="${param.error}" class="alert alert-error">

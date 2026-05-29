@@ -19,10 +19,8 @@
 | Issue | Задача | Инструкция | Приоритет / примечания |
 |---|---|---|---|
 | #1 | Удаление своих активностей и вариантов | [`tasks/issue-1-delete-content.md`](tasks/issue-1-delete-content.md) | soft-delete (`deleted_at` уже в схеме) |
-| #4 | Бесконечная подгрузка карточек вместо «Показать ещё» | [`tasks/issue-4-infinite-scroll.md`](tasks/issue-4-infinite-scroll.md) | HTMX `revealed`; причина бага — пустой `hx-get` |
 | #9 | Выровнять кнопки статусов и «В избранное» по высоте | [`tasks/issue-9-button-alignment.md`](tasks/issue-9-button-alignment.md) | Высокий; ранее НЕ РЕШЕНО — подозреваемый `mt-4` |
 | #12 | Управление профилем (имя/фото) | [`tasks/issue-12-profile-management.md`](tasks/issue-12-profile-management.md) | Почти готово; фото зависит от #7 / R2 |
-| #16 | Редизайн страницы входа под стилистику портала | [`tasks/issue-16-login-redesign.md`](tasks/issue-16-login-redesign.md) | CSS `.auth-*` (затронет и регистрацию) |
 | #24 | Ошибка «Запрос не выполнен (400)» при вводе тегов | [`tasks/issue-24-tag-suggest-400.md`](tasks/issue-24-tag-suggest-400.md) | См. «Известные баги» #5 |
 | #26 | Раскладка категорий: минимизировать число строк | [`tasks/issue-26-category-layout.md`](tasks/issue-26-category-layout.md) | Косметика (CSS / порядок категорий) |
 | #28 | Карточка активности кликабельна целиком | [`tasks/issue-28-clickable-card.md`](tasks/issue-28-clickable-card.md) | Stretched link (`::after`); зона звёздочки неактивна под #33 |
@@ -32,6 +30,7 @@
 | #36 | Архдолг: переходы статусов в сервис + унификация slug/`parseTags`/404 | [`tasks/issue-36-status-transitions-service.md`](tasks/issue-36-status-transitions-service.md) | Из аудита; связано с #1 (delete в сервисе) |
 | #37 | `@PreAuthorize` неактивна — включить `@EnableMethodSecurity` | [`tasks/issue-37-method-security.md`](tasks/issue-37-method-security.md) | Из аудита; проверить `ROLE_ADMIN` |
 | #38 | Вынести логику аватара в `AvatarService` | [`tasks/issue-38-avatar-service.md`](tasks/issue-38-avatar-service.md) | Из аудита; чистый рефактор, связан с #12/#7 |
+| #19 | Выбор аватара из предложенных + отображение (топ-бар/профиль) | [`tasks/issue-19-avatar-presets.md`](tasks/issue-19-avatar-presets.md) | Пресеты-статика (не зависит от R2); онлайн-виджет вне scope; нужны файлы в `static/images/avatars/` |
 | #25, #29, #30, #31, #18 | Эпик: раскладка и единый каркас страниц | [`tasks/epic-layout-redesign.md`](tasks/epic-layout-redesign.md) | Делать одним заходом — правки в общем `main.css` конфликтуют |
 | — | Юнит-тесты сервисов | [`tasks/unit-tests-services.md`](tasks/unit-tests-services.md) | Из раздела «Идеи» |
 | — | R2 avatar URL — заглушка вместо реального URL | — | Высокий (prod), `UserProfileController.java`; связано с #7/#12-фото |
@@ -58,6 +57,8 @@
 | | 8 | Косметика: чистка кода | `PortalUserDetails.java`, `CatalogIntegrationTest.java`, `UserController.java`, `JdbcConvertersConfig.java`, `WebConfig.java`, `additional-spring-configuration-metadata.json` | 27.05.2026 |
 | | 4 | Обновить счётчики тестов в AI_IMPLEMENTATION_GUIDE.md (блок 2: 12 → 13) | `AI_IMPLEMENTATION_GUIDE.md` | 28.05.2026 |
 | | 15 | Управление профилем: смена пароля и email (Issue #12) | `UserService.java`, `UserProfileController.java`, `edit.html`, `UserServiceTest.java` | 28.05.2026 |
+| | 4 | Бесконечная подгрузка карточек вместо «Показать ещё» | `CatalogController.java`, `catalog/_cards.html`, `catalog/index.html`, `CatalogIntegrationTest.java`, `EndToEndTest.java`, `ExperienceIntegrationTest.java`, `StartupSmokeTest.java` | 29.05.2026 |
+| | 16 | Редизайн страницы входа под стилистику портала | `main.css`, `login.html`, `register.html`, `main_background2.png` | 30.05.2026 |
 ---
 
 ## Известные баги
