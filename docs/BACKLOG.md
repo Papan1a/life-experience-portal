@@ -6,16 +6,31 @@
 
 ## В работе
 
-*Нет активных задач.*
+| Issue | Задача | Инструкция | Примечания |
+|---|---|---|---|
+| #21 | Снять отметку повторным кликом (убрать кнопку «Снять отметку») | [`tasks/issue-21-status-toggle.md`](tasks/issue-21-status-toggle.md) | Чистый Thymeleaf, без JS |
 
 ---
 
 ## Запланировано
 
-| # | Задача | Приоритет | Примечания |
+Идентификатор — номер Issue из `ISSUES.md`. Файл-инструкция — в `docs/tasks/`.
+
+| Issue | Задача | Инструкция | Приоритет / примечания |
 |---|---|---|---|
-| | 6 | R2 avatar URL — заглушка `/r2/...` вместо реального URL | Высокий (prod) | `UserProfileController.java:149` |
-| | 12 | Выровнять кнопки на страницах активностей и вариаций (Issue #9) — НЕ РЕШЕНО, несмотря на внесённые изменения | Высокий | `activity.html`, `variant.html`, `_report_button.html` |
+| #1 | Удаление своих активностей и вариантов | [`tasks/issue-1-delete-content.md`](tasks/issue-1-delete-content.md) | soft-delete (`deleted_at` уже в схеме) |
+| #4 | Бесконечная подгрузка карточек вместо «Показать ещё» | [`tasks/issue-4-infinite-scroll.md`](tasks/issue-4-infinite-scroll.md) | HTMX `revealed`; причина бага — пустой `hx-get` |
+| #9 | Выровнять кнопки статусов и «В избранное» по высоте | [`tasks/issue-9-button-alignment.md`](tasks/issue-9-button-alignment.md) | Высокий; ранее НЕ РЕШЕНО — подозреваемый `mt-4` |
+| #12 | Управление профилем (имя/фото) | [`tasks/issue-12-profile-management.md`](tasks/issue-12-profile-management.md) | Почти готово; фото зависит от #7 / R2 |
+| #16 | Редизайн страницы входа под стилистику портала | [`tasks/issue-16-login-redesign.md`](tasks/issue-16-login-redesign.md) | CSS `.auth-*` (затронет и регистрацию) |
+| #24 | Ошибка «Запрос не выполнен (400)» при вводе тегов | [`tasks/issue-24-tag-suggest-400.md`](tasks/issue-24-tag-suggest-400.md) | См. «Известные баги» #5 |
+| #26 | Раскладка категорий: минимизировать число строк | [`tasks/issue-26-category-layout.md`](tasks/issue-26-category-layout.md) | Косметика (CSS / порядок категорий) |
+| #28 | Карточка активности кликабельна целиком | [`tasks/issue-28-clickable-card.md`](tasks/issue-28-clickable-card.md) | Stretched link (`::after`); зона звёздочки неактивна под #33 |
+| #32 | Баг: на `/saved` отметка «В избранном» меняется не у той карточки | [`tasks/issue-32-bookmark-saved-toggle.md`](tasks/issue-32-bookmark-saved-toggle.md) | Дубль `id` → `<form>` корень + `hx-target="this"` |
+| #25, #29, #30, #31, #18 | Эпик: раскладка и единый каркас страниц | [`tasks/epic-layout-redesign.md`](tasks/epic-layout-redesign.md) | Делать одним заходом — правки в общем `main.css` конфликтуют |
+| — | Юнит-тесты сервисов | [`tasks/unit-tests-services.md`](tasks/unit-tests-services.md) | Из раздела «Идеи» |
+| — | R2 avatar URL — заглушка вместо реального URL | — | Высокий (prod), `UserProfileController.java`; связано с #7/#12-фото |
+
 ---
 
 ## Выполнено
