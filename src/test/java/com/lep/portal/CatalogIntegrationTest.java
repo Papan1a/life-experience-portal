@@ -290,9 +290,9 @@ public class CatalogIntegrationTest {
                 .andExpect(content().string(
                         org.hamcrest.Matchers.not(
                                 org.hamcrest.Matchers.containsString("<html"))))
-                // Fragment should contain the Thymeleaf fragment name
+                // Fragment should contain rendered activity cards (card-page fragment)
                 .andExpect(content().string(
-                        org.hamcrest.Matchers.containsString("catalog-results")));
+                        org.hamcrest.Matchers.containsString("activity-card")));
     }
 
     // ---- T3.9 — Variant belonging to activity X, requested under activity Y → 404 ----
@@ -325,11 +325,11 @@ public class CatalogIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
-    // ---- T3.11 — Pagination: GET /?page=2 with >20 activities ----
+    // ---- T3.11 — Infinite scroll: sentinel on page 1 + HTMX load of page 2 ----
     @Test
     @Order(11)
-    @DisplayName("T3.11 — GET /?page=2 → вторая страница каталога с пагинацией")
-    void catalogPaginationSecondPage() throws Exception {
+    @DisplayName("T3.11 — infinite scroll: страница 1 содержит сентинел, HTMX page=2 → карточки")
+    void catalogInfiniteScrollSecondPage() throws Exception {
         login();
 
         // Create 21 additional activities (total will be > 20 with seed activities)
@@ -345,11 +345,21 @@ public class CatalogIntegrationTest {
                     seedUser.getId().toString());
         }
 
-        mockMvc.perform(get("/").cookie(sessionCookie).param("page", "2"))
+        // Page 1 (full page): more than one page of results → infinite-scroll sentinel present
+        mockMvc.perform(get("/").cookie(sessionCookie))
                 .andExpect(status().isOk())
                 .andExpect(content().string(
-                        org.hamcrest.Matchers.containsString("Страница ")))
+                        org.hamcrest.Matchers.containsString("hx-trigger=\"revealed\"")));
+
+        // HTMX load of page 2 (as the sentinel would do) → card fragment, not full layout
+        mockMvc.perform(get("/").cookie(sessionCookie)
+                        .param("page", "2")
+                        .header("HX-Request", "true"))
+                .andExpect(status().isOk())
                 .andExpect(content().string(
-                        org.hamcrest.Matchers.containsString("<strong>2</strong>")));
+                        org.hamcrest.Matchers.containsString("activity-card")))
+                .andExpect(content().string(
+                        org.hamcrest.Matchers.not(
+                                org.hamcrest.Matchers.containsString("<html"))));
     }
 }

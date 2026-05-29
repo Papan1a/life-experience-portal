@@ -276,7 +276,7 @@ public class ExperienceIntegrationTest {
                 .andExpect(content().string(
                         org.hamcrest.Matchers.containsString("bookmark-button")))
                 .andExpect(content().string(
-                        org.hamcrest.Matchers.containsString("Сохранено")));
+                        org.hamcrest.Matchers.containsString("В избранном")));
 
         Integer count = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM bookmarks WHERE user_id = ?::uuid AND activity_id = ?::uuid AND variant_id IS NULL",
@@ -291,7 +291,7 @@ public class ExperienceIntegrationTest {
                         .param("variantId", ""))
                 .andExpect(status().isOk())
                 .andExpect(content().string(
-                        org.hamcrest.Matchers.containsString("Сохранить")));
+                        org.hamcrest.Matchers.containsString("В избранное")));
 
         count = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM bookmarks WHERE user_id = ?::uuid AND activity_id = ?::uuid AND variant_id IS NULL",
@@ -317,7 +317,7 @@ public class ExperienceIntegrationTest {
         mockMvc.perform(get("/saved").cookie(sessionCookie))
                 .andExpect(status().isOk())
                 .andExpect(content().string(
-                        org.hamcrest.Matchers.containsString("Сохранённое")))
+                        org.hamcrest.Matchers.containsString("Избранное")))
                 .andExpect(content().string(
                         org.hamcrest.Matchers.containsString("Футбол")));
     }

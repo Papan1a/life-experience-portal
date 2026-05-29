@@ -57,9 +57,9 @@ public class CatalogController {
                 experienceService.getFriendsActivity(principal.getUserId());
         model.addAttribute("friendsActivity", friendsActivity);
 
-        // HTMX: return content fragment only, no layout
+        // HTMX: return card page fragment (infinite scroll)
         if ("true".equals(hxRequest)) {
-            return "catalog/index :: catalog-content";
+            return "catalog/_cards :: card-page";
         }
 
         return "catalog/index";

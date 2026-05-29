@@ -35,53 +35,8 @@
             <div th:if="${page.activities().isEmpty()}" class="card placeholder-card">
                 Нет активностей по выбранным фильтрам.
             </div>
-
-            <div class="card-grid" th:unless="${page.activities().isEmpty()}">
-                <div th:each="activity : ${page.activities()}" class="activity-card">
-                    <span class="bookmark-star" title="Добавление в избранное доступно на странице активности">
-                        <img th:src="@{/images/icons/star_unpressed.png}" alt=""/>
-                    </span>
-                    <th:block th:each="cat : ${categories}" th:if="${cat.id == activity.categoryId}">
-                        <img class="activity-card-icon"
-                             th:src="@{'/images/categories/' + ${cat.slug} + '.png'}" alt=""/>
-                    </th:block>
-                    <a class="activity-card-title"
-                       th:href="@{/activities/{id}(id=${activity.id})}"
-                       th:text="${activity.title}">Название</a>
-                    <div class="activity-card-meta">
-                        <span th:if="${activity.costTier != null}" th:text="${activity.costTier}">free</span>
-                        <span th:if="${activity.estimatedDuration != null}"
-                              th:text="${activity.estimatedDuration}">1 час</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ===== Пагинация ===== -->
-            <div th:if="${page.totalPages() > 1}"
-                 class="flex gap-2 align-center justify-between mt-4">
-                <th:block th:if="${page.hasPrev()}">
-                    <a th:href="@{/(category=${currentCategory},tags=${currentTags},page=${page.currentPage() - 1})}"
-                       class="btn-show-more"
-                       hx-get hx-target="#catalog-results" hx-swap="outerHTML">
-                        ← Назад
-                    </a>
-                </th:block>
-                <span th:unless="${page.hasPrev()}"></span>
-
-                <span class="text-muted" style="font-size: 0.85rem;">
-                    Страница <strong th:text="${page.currentPage()}">1</strong>
-                    из <strong th:text="${page.totalPages()}">1</strong>
-                    (всего: <span th:text="${page.totalCount()}">0</span>)
-                </span>
-
-                <th:block th:if="${page.hasNext()}">
-                    <a th:href="@{/(category=${currentCategory},tags=${currentTags},page=${page.currentPage() + 1})}"
-                       class="btn-show-more"
-                       hx-get hx-target="#catalog-results" hx-swap="outerHTML">
-                        Показать ещё →
-                    </a>
-                </th:block>
-                <span th:unless="${page.hasNext()}"></span>
+            <div class="card-grid" th:unless="${page.activities().isEmpty()}"
+                 th:insert="~{catalog/_cards :: card-page}">
             </div>
         </div>
     </th:block>

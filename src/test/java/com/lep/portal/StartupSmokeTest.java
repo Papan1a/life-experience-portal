@@ -59,7 +59,7 @@ public class StartupSmokeTest {
 
         // 2. Dev-пользователи созданы (DevSeedRunner)
         Integer devUsers = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM users WHERE email IN ('user1@dev.test', 'user2@dev.test')",
+                "SELECT COUNT(*) FROM users WHERE email IN ('1@1', '2@2')",
                 Integer.class);
         assertThat(devUsers).isEqualTo(2);
 

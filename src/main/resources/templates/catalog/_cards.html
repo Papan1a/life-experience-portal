@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Карточка активности (переиспользуемый фрагмент) -->
+<th:block th:fragment="activity-card(activity)">
+    <div class="activity-card">
+        <span class="bookmark-star" title="Добавление в избранное доступно на странице активности">
+            <img th:src="@{/images/icons/star_unpressed.png}" alt=""/>
+        </span>
+        <th:block th:each="cat : ${categories}" th:if="${cat.id == activity.categoryId}">
+            <img class="activity-card-icon"
+                 th:src="@{'/images/categories/' + ${cat.slug} + '.png'}" alt=""/>
+        </th:block>
+        <a class="activity-card-title"
+           th:href="@{/activities/{id}(id=${activity.id})}"
+           th:text="${activity.title}">Название</a>
+        <div class="activity-card-meta">
+            <span th:if="${activity.costTier != null}" th:text="${activity.costTier}">free</span>
+            <span th:if="${activity.estimatedDuration != null}"
+                  th:text="${activity.estimatedDuration}">1 час</span>
+        </div>
+    </div>
+</th:block>
+
+<!-- Порция карточек + сентинел (HTMX infinite scroll) -->
+<th:block th:fragment="card-page">
+    <th:block th:each="activity : ${page.activities()}">
+        <th:block th:replace="~{catalog/_cards :: activity-card(${activity})}"></th:block>
+    </th:block>
+    <div th:if="${page.hasNext()}"
+         th:attr="hx-get=@{/(category=${currentCategory},tags=${currentTags},page=${page.currentPage() + 1})}"
+         hx-trigger="revealed"
+         hx-target="this"
+         hx-swap="outerHTML"
+         style="grid-column: 1 / -1; height: 1px;">
+    </div>
+</th:block>
+
+</body>
+</html>

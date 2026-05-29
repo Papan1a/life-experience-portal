@@ -333,7 +333,7 @@ public class EndToEndTest {
                 .andExpect(content().string(
                         org.hamcrest.Matchers.containsString("bookmark-button")))
                 .andExpect(content().string(
-                        org.hamcrest.Matchers.containsString("Сохранено")));
+                        org.hamcrest.Matchers.containsString("В избранном")));
 
         // Verify in DB
         Integer count = jdbcTemplate.queryForObject(
@@ -349,7 +349,7 @@ public class EndToEndTest {
                         .param("variantId", ""))
                 .andExpect(status().isOk())
                 .andExpect(content().string(
-                        org.hamcrest.Matchers.containsString("Сохранить")));
+                        org.hamcrest.Matchers.containsString("В избранное")));
 
         count = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM bookmarks WHERE user_id = ?::uuid AND activity_id = ?::uuid",
@@ -506,7 +506,7 @@ public class EndToEndTest {
                         .param("variantId", vId.toString()))
                 .andExpect(status().isOk())
                 .andExpect(content().string(
-                        org.hamcrest.Matchers.containsString("Сохранено")));
+                        org.hamcrest.Matchers.containsString("В избранном")));
 
         // Verify variant-level bookmark exists
         Integer bmCount = jdbcTemplate.queryForObject(
@@ -522,7 +522,7 @@ public class EndToEndTest {
                         .param("variantId", vId.toString()))
                 .andExpect(status().isOk())
                 .andExpect(content().string(
-                        org.hamcrest.Matchers.containsString("Сохранить")));
+                        org.hamcrest.Matchers.containsString("В избранное")));
 
         // Verify bookmark removed
         bmCount = jdbcTemplate.queryForObject(
