@@ -23,15 +23,6 @@
 
 39. Реализовать hard-delete активностей и вариантов при отсутствии чужих ссылок (сейчас всегда soft-delete). При удалении проверять: если нет чужих закладок/опыта и (для активности) нет вариантов — выполнять физический DELETE вместо установки deleted_at.
 
-13. Система жалоб (reports) не работает — жалобы не сохраняются в БД и их нельзя посмотреть в админке.
-    **В чём проблема:** сейчас [`ReportController`](src/main/java/com/lep/portal/admin/ReportController.java:35) только пишет `log.warn(...)` в лог-файл, в БД ничего не попадает. В админке [`GET /admin/reports`](src/main/java/com/lep/portal/admin/AdminController.java:105) — заглушка с текстом «Функция отчётов будет доступна в следующей версии». Единственный способ увидеть жалобу — лезть в логи Docker-контейнера.
-    **Что нужно сделать:**
-    - Создать миграцию с таблицей `reports` (`id`, `reporter_user_id`, `target_type`, `target_id`, `reason`, `comment`, `status`, `created_at`, `resolved_at`, `resolved_by`)
-    - Создать entity `Report.java` и `ReportRepository.java`
-    - Доработать `ReportController.java` — сохранять жалобу в БД
-    - Создать шаблон `admin/reports.html` со списком жалоб, фильтрацией по статусу, возможностью отметить "обработано"
-    - Обновить `AdminController.java` (`GET /admin/reports`) — загружать реальные данные из репозитория
-
 19. Доработка. В настройках профиля надо сделать возможность выбрать Картинку аватара из предложенных. Она должна быть закреплена за пользователем и потом отображаться в разных местах на странице (в топ-бар, в окошке "онлайн")
 
 23. Подумать над такой темой:
@@ -58,12 +49,10 @@
 
 <!-- Перенесено после обсуждения. Файл-инструкция в docs/tasks/, запись в BACKLOG.md → «Запланировано». -->
 
-- **#9** — Выровнять кнопки статусов и «В избранное» по высоте → [`tasks/issue-9-button-alignment.md`](tasks/issue-9-button-alignment.md)
+- **#9** — Выровнять кнопки статусов и «В избранное» по высоте (включает вынос кнопки жалобы из блока) → [`tasks/issue-9-button-alignment.md`](tasks/issue-9-button-alignment.md)
+- **#13** — Система жалоб: хранение в БД + админка + UI-модалка (`<dialog>`, лимит 200, запрет resize) → [`tasks/issue-13-reports-system.md`](tasks/issue-13-reports-system.md)
 - **#12** — Управление профилем (имя/фото; пароль/email уже готовы) → [`tasks/issue-12-profile-management.md`](tasks/issue-12-profile-management.md)
-- **#26** — Раскладка категорий: минимизировать число строк → [`tasks/issue-26-category-layout.md`](tasks/issue-26-category-layout.md)
-- **#28** — Карточка активности кликабельна целиком → [`tasks/issue-28-clickable-card.md`](tasks/issue-28-clickable-card.md)
 - **#25 + #29 + #30 + #31 + #18** — Эпик: раскладка и единый каркас страниц (топ-бар, скролл, ширина колонок, объединение профиля) → [`tasks/epic-layout-redesign.md`](tasks/epic-layout-redesign.md)
-- **#32** — Баг: на `/saved` отметка «В избранном» меняется не у той карточки (дубль `id`) → [`tasks/issue-32-bookmark-saved-toggle.md`](tasks/issue-32-bookmark-saved-toggle.md)
 - **#34** — Баг: создание активности молча не срабатывает при некоторых значениях сложности/стоимости (рассинхрон `<select>` с enum + невидимые ошибки валидации) → [`tasks/issue-34-create-activity-enum-mismatch.md`](tasks/issue-34-create-activity-enum-mismatch.md)
 - **#35** — Автотесты на «тихие» баги форм создания/редактирования (зависит от #34) → [`tasks/issue-35-form-validation-tests.md`](tasks/issue-35-form-validation-tests.md)
 - **#36** — Архдолг: переходы статусов в сервис + унификация slug/`parseTags`/`NotFoundException` (admin/catalog) → [`tasks/issue-36-status-transitions-service.md`](tasks/issue-36-status-transitions-service.md) _(из архитектурного аудита)_
@@ -75,6 +64,12 @@
 ## Выполнено / закрытые
 
 <!-- После реализации и аппрува: запись в BACKLOG.md → «Выполнено», файл из docs/tasks/ удалён. -->
+
+~~**#28** — Карточка активности кликабельна целиком~~ → Backlog #28 (выполнено 30.05.2026)
+
+~~**#32** — Баг: на `/saved` отметка «В избранном» меняется не у той карточки~~ → Backlog #32 (выполнено 30.05.2026)
+
+~~**#26** — Раскладка категорий: минимизировать число строк~~ → Backlog #26 (выполнено 30.05.2026)
 
 ~~**#1** — Удаление своих активностей и вариантов (soft-delete)~~ → Backlog #1 (выполнено 30.05.2026)
 

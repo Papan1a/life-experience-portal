@@ -18,11 +18,9 @@
 
 | Issue | Задача | Инструкция | Приоритет / примечания |
 |---|---|---|---|
-| #9 | Выровнять кнопки статусов и «В избранное» по высоте | [`tasks/issue-9-button-alignment.md`](tasks/issue-9-button-alignment.md) | Высокий; ранее НЕ РЕШЕНО — подозреваемый `mt-4` |
+| #9 | Выровнять кнопки статусов и «В избранное» по высоте | [`tasks/issue-9-button-alignment.md`](tasks/issue-9-button-alignment.md) | Истинная причина — padded-блок жалобы; решение = вынести жалобу (в #13) + center |
+| #13 | Система жалоб: хранение в БД + админка + UI-модалка | [`tasks/issue-13-reports-system.md`](tasks/issue-13-reports-system.md) | Объединяет исходный #13 (reports не сохраняются) + новый UI (`<dialog>`, лимит 200, resize:none); связан с #9 |
 | #12 | Управление профилем (имя/фото) | [`tasks/issue-12-profile-management.md`](tasks/issue-12-profile-management.md) | Почти готово; фото зависит от #7 / R2 |
-| #26 | Раскладка категорий: минимизировать число строк | [`tasks/issue-26-category-layout.md`](tasks/issue-26-category-layout.md) | Косметика (CSS / порядок категорий) |
-| #28 | Карточка активности кликабельна целиком | [`tasks/issue-28-clickable-card.md`](tasks/issue-28-clickable-card.md) | Stretched link (`::after`); зона звёздочки неактивна под #33 |
-| #32 | Баг: на `/saved` отметка «В избранном» меняется не у той карточки | [`tasks/issue-32-bookmark-saved-toggle.md`](tasks/issue-32-bookmark-saved-toggle.md) | Дубль `id` → `<form>` корень + `hx-target="this"` |
 | #34 | Баг: создание активности молча не срабатывает (рассинхрон `<select>`↔enum) | [`tasks/issue-34-create-activity-enum-mismatch.md`](tasks/issue-34-create-activity-enum-mismatch.md) | Опции из `values()` + видимые ошибки валидации |
 | #35 | Автотесты на «тихие» баги форм (зависит от #34) | [`tasks/issue-35-form-validation-tests.md`](tasks/issue-35-form-validation-tests.md) | Инвариант: каждая опция select принимается сервером |
 | #36 | Архдолг: переходы статусов в сервис + унификация slug/`parseTags`/404 | [`tasks/issue-36-status-transitions-service.md`](tasks/issue-36-status-transitions-service.md) | Из аудита; связано с #1 (delete в сервисе) |
@@ -60,6 +58,9 @@
 | #1 | Удаление активностей и вариантов (soft-delete) | `CatalogService.java`, `ActivityController.java`, `VariantController.java`, `activity.html`, `variant.html`, `my_activities.html`, `MyActivitiesIntegrationTest.java` | 30.05.2026 |
 | #24 | Ошибка 400 при вводе тегов | `variant_form.html`, `activity_form.html`, `TagController.java`, `_tag_suggestions.html` | 30.05.2026 |
 | | 16 | Редизайн страницы входа под стилистику портала | `main.css`, `login.html`, `register.html`, `main_background2.png` | 30.05.2026 |
+| #26 | Раскладка категорий: чипсы укладываются в ≤2 строки (компактный CSS чипсов) | `main.css` | 30.05.2026 |
+| #28 | Карточка активности кликабельна целиком (stretched link через `::after`) | `main.css` | 30.05.2026 |
+| #32 | Баг `/saved`: отметка «В избранном» меняется не у той карточки (фрагмент → `<form>` + `hx-target="this"`, убран дубль `id`) | `experience/_bookmark_button.html` | 30.05.2026 |
 ---
 
 ## Известные баги
