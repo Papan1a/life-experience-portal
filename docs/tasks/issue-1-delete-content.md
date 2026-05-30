@@ -35,7 +35,7 @@ public void deleteVariant(UUID id, UUID actorId, boolean isAdmin)
 ```
 - Проверка прав — тот же паттерн, что в `updateActivity` (автор или админ, иначе `ForbiddenException`).
 - Проставить `deletedAt = Instant.now()` и сохранить (или через `@Modifying`-запрос в репозитории — по стилю проекта; в проекте используется `save(existing)`).
-- **Каскад для активности:** при удалении активности её варианты тоже должны исчезнуть из выдачи. Варианты: либо пометить `deleted_at` у всех вариантов этой активности, либо положиться на то, что view вариантов скрывает варианты удалённых активностей. **Выбрать и зафиксировать** один способ; предпочтительно явно проставлять `deleted_at` вариантам (предсказуемо).
+- **Каскад для активности:** помечаем `deleted_at` **только у самой активности**. Варианты явно НЕ трогаем — view `visible_variants` уже join'ится с `activities` и требует `a.deleted_at IS NULL` ([V1__init.sql:217-222](src/main/resources/db/migration/V1__init.sql#L217)), то есть варианты удалённой активности автоматически исчезают из выдачи. Это соответствует модели D7 «query-time visibility, no cascade writes» ([V1__init.sql:211-212](src/main/resources/db/migration/V1__init.sql#L211)). Bulk-update вариантов **не нужен** (и метода под него в `VariantRepository` нет — пришлось бы дописывать `@Modifying`).
 
 ### 3. Контроллеры (эндпоинты)
 - `ActivityController`: `@PostMapping("/{id}/delete")` → `deleteActivity(...)` → `redirect:/my-activities` (с flash-сообщением «Активность удалена»).
@@ -53,14 +53,13 @@ public void deleteVariant(UUID id, UUID actorId, boolean isAdmin)
 </form>
 ```
 - Обязательно **подтверждение** перед удалением (`confirm`).
-- На странице активности `canEdit` уже вычисляется ([ActivityController:53-55](src/main/java/com/lep/portal/catalog/ActivityController.java#L53)). Для варианта — добавить аналогичный `canEdit` в модель `variantDetail` (сейчас его там нет — проверить и добавить, иначе кнопку негде условно показать).
+- `canEdit` уже вычисляется и кладётся в модель **на обеих страницах**: активность — [ActivityController:53-55](src/main/java/com/lep/portal/catalog/ActivityController.java#L53), вариант — [VariantController:61-63](src/main/java/com/lep/portal/catalog/VariantController.java#L61). Ничего добавлять в контроллеры для условного показа кнопки не нужно — вешать «Удалить» прямо на готовый `th:if="${canEdit}"`.
 
 ## Узкие места
 
 - **Права:** кнопку показывать только автору/админу, но проверку прав делать **на сервере** (UI-условие — не защита). Сервис уже бросает `ForbiddenException`.
 - **Каскад и FK:** именно поэтому выбран soft-delete — не трогаем строки в `bookmarks`/`user_experiences`. Жёсткий `DELETE` потребовал бы каскадов и риск осиротевших ссылок. **Не делать hard delete.**
 - **Видимость после удаления:** удалённое не должно появляться в каталоге, «Мои активности», «Избранное», «Мой опыт», на странице деталей (должна отдавать 404 через `getVisibleActivity`). Проверить все списки.
-- `variantDetail` сейчас не кладёт `canEdit` в модель — для кнопки удаления варианта на его странице это нужно добавить.
 
 ## Что НЕ трогаем
 
