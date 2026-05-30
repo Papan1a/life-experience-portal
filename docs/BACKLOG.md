@@ -18,7 +18,6 @@
 
 | Issue | Задача | Инструкция | Приоритет / примечания |
 |---|---|---|---|
-| #1 | Удаление своих активностей и вариантов | [`tasks/issue-1-delete-content.md`](tasks/issue-1-delete-content.md) | soft-delete (`deleted_at` уже в схеме) |
 | #9 | Выровнять кнопки статусов и «В избранное» по высоте | [`tasks/issue-9-button-alignment.md`](tasks/issue-9-button-alignment.md) | Высокий; ранее НЕ РЕШЕНО — подозреваемый `mt-4` |
 | #12 | Управление профилем (имя/фото) | [`tasks/issue-12-profile-management.md`](tasks/issue-12-profile-management.md) | Почти готово; фото зависит от #7 / R2 |
 | #26 | Раскладка категорий: минимизировать число строк | [`tasks/issue-26-category-layout.md`](tasks/issue-26-category-layout.md) | Косметика (CSS / порядок категорий) |
@@ -58,6 +57,7 @@
 | | 15 | Управление профилем: смена пароля и email (Issue #12) | `UserService.java`, `UserProfileController.java`, `edit.html`, `UserServiceTest.java` | 28.05.2026 |
 | | 4 | Бесконечная подгрузка карточек вместо «Показать ещё» | `CatalogController.java`, `catalog/_cards.html`, `catalog/index.html`, `CatalogIntegrationTest.java`, `EndToEndTest.java`, `ExperienceIntegrationTest.java`, `StartupSmokeTest.java` | 29.05.2026 |
 | #21 | Снятие отметки повторным кликом (убрана кнопка «Снять отметку») | `experience/_status_buttons.html` | 30.05.2026 |
+| #1 | Удаление активностей и вариантов (soft-delete) | `CatalogService.java`, `ActivityController.java`, `VariantController.java`, `activity.html`, `variant.html`, `my_activities.html`, `MyActivitiesIntegrationTest.java` | 30.05.2026 |
 | #24 | Ошибка 400 при вводе тегов | `variant_form.html`, `activity_form.html`, `TagController.java`, `_tag_suggestions.html` | 30.05.2026 |
 | | 16 | Редизайн страницы входа под стилистику портала | `main.css`, `login.html`, `register.html`, `main_background2.png` | 30.05.2026 |
 ---
