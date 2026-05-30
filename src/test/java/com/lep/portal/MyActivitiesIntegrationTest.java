@@ -283,4 +283,167 @@ public class MyActivitiesIntegrationTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrlPattern("**/login"));
     }
+
+    // ---- T6: Автор удаляет свою активность → 3xx, исчезает из visible_activities ----
+
+    @Test
+    @Order(6)
+    @DisplayName("T6: Author deletes own activity → 3xx, disappears from visible_activities")
+    void authorDeletesOwnActivity() throws Exception {
+        var result = mockMvc.perform(formLogin("/login")
+                        .user("username", seedUser.getEmail())
+                        .password("password"))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+        var sessionCookie = result.getResponse().getCookie("SESSION");
+        assertThat(sessionCookie).isNotNull();
+
+        // Create an activity
+        mockMvc.perform(post("/activities")
+                        .cookie(sessionCookie)
+                        .with(csrf())
+                        .param("title", "Удаляемая активность")
+                        .param("description", "Описание")
+                        .param("categoryId", sportCategoryId.toString())
+                        .param("complexity", "low")
+                        .param("costTier", "free")
+                        .param("force", "true"))
+                .andExpect(status().is3xxRedirection());
+
+        UUID activityId = jdbcTemplate.queryForObject(
+                "SELECT id FROM activities WHERE title = 'Удаляемая активность'", UUID.class);
+
+        // Verify it's visible before delete
+        Integer visibleCount = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM visible_activities WHERE id = ?::uuid",
+                Integer.class, activityId.toString());
+        assertThat(visibleCount).isEqualTo(1);
+
+        // Delete it
+        mockMvc.perform(post("/activities/" + activityId + "/delete")
+                        .cookie(sessionCookie)
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection());
+
+        // Verify it's gone from visible_activities
+        visibleCount = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM visible_activities WHERE id = ?::uuid",
+                Integer.class, activityId.toString());
+        assertThat(visibleCount).isEqualTo(0);
+
+        // deleted_at is set
+        var deletedAt = jdbcTemplate.queryForObject(
+                "SELECT deleted_at FROM activities WHERE id = ?::uuid",
+                java.sql.Timestamp.class, activityId.toString());
+        assertThat(deletedAt).isNotNull();
+    }
+
+    // ---- T7: Не-автор не может удалить чужую активность → 403 ----
+
+    @Test
+    @Order(7)
+    @DisplayName("T7: Non-author cannot delete another's activity → 403")
+    void nonAuthorCannotDeleteOthersActivity() throws Exception {
+        // Login as seedUser and create activity
+        var result = mockMvc.perform(formLogin("/login")
+                        .user("username", seedUser.getEmail())
+                        .password("password"))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+        var authorCookie = result.getResponse().getCookie("SESSION");
+
+        mockMvc.perform(post("/activities")
+                        .cookie(authorCookie)
+                        .with(csrf())
+                        .param("title", "Чужая не удаляется")
+                        .param("description", "Описание")
+                        .param("categoryId", sportCategoryId.toString())
+                        .param("complexity", "low")
+                        .param("costTier", "free")
+                        .param("force", "true"))
+                .andExpect(status().is3xxRedirection());
+
+        UUID activityId = jdbcTemplate.queryForObject(
+                "SELECT id FROM activities WHERE title = 'Чужая не удаляется'", UUID.class);
+
+        // Create another user (not author, not admin)
+        var otherUser = new User();
+        otherUser.setDisplayName("Другой Пользователь");
+        otherUser.setEmail("stranger@test.dev");
+        otherUser.setPasswordHash(passwordEncoder.encode("password"));
+        userRepository.save(otherUser);
+
+        result = mockMvc.perform(formLogin("/login")
+                        .user("username", otherUser.getEmail())
+                        .password("password"))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+        var strangerCookie = result.getResponse().getCookie("SESSION");
+
+        // Try to delete — should get 403
+        mockMvc.perform(post("/activities/" + activityId + "/delete")
+                        .cookie(strangerCookie)
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    // ---- T8: Удаление активности скрывает её варианты из visible_variants ----
+
+    @Test
+    @Order(8)
+    @DisplayName("T8: Deleting activity hides its variants from visible_variants")
+    void deletingActivityHidesItsVariants() throws Exception {
+        var result = mockMvc.perform(formLogin("/login")
+                        .user("username", seedUser.getEmail())
+                        .password("password"))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+        var sessionCookie = result.getResponse().getCookie("SESSION");
+        assertThat(sessionCookie).isNotNull();
+
+        // Create an activity
+        mockMvc.perform(post("/activities")
+                        .cookie(sessionCookie)
+                        .with(csrf())
+                        .param("title", "Активность с вариантом")
+                        .param("description", "Описание")
+                        .param("categoryId", sportCategoryId.toString())
+                        .param("complexity", "low")
+                        .param("costTier", "free")
+                        .param("force", "true"))
+                .andExpect(status().is3xxRedirection());
+
+        UUID activityId = jdbcTemplate.queryForObject(
+                "SELECT id FROM activities WHERE title = 'Активность с вариантом'", UUID.class);
+
+        // Create a variant
+        mockMvc.perform(post("/activities/" + activityId + "/variants")
+                        .cookie(sessionCookie)
+                        .with(csrf())
+                        .param("title", "Вариант для удаления")
+                        .param("description", "Описание варианта")
+                        .param("differenceReason", "Отличие"))
+                .andExpect(status().is3xxRedirection());
+
+        UUID variantId = jdbcTemplate.queryForObject(
+                "SELECT id FROM variants WHERE title = 'Вариант для удаления'", UUID.class);
+
+        // Variant is visible before delete
+        Integer visibleVariants = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM visible_variants WHERE activity_id = ?::uuid",
+                Integer.class, activityId.toString());
+        assertThat(visibleVariants).isEqualTo(1);
+
+        // Delete the activity
+        mockMvc.perform(post("/activities/" + activityId + "/delete")
+                        .cookie(sessionCookie)
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection());
+
+        // Variants are hidden from visible_variants (view joins with activities.deleted_at IS NULL)
+        visibleVariants = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM visible_variants WHERE activity_id = ?::uuid",
+                Integer.class, activityId.toString());
+        assertThat(visibleVariants).isEqualTo(0);
+    }
 }

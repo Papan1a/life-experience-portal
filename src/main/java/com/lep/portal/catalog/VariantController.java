@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.lep.portal.common.NotFoundException;
 import com.lep.portal.experience.Bookmark;
@@ -122,6 +123,18 @@ public class VariantController {
 
         Variant saved = catalogService.createVariant(variant, principal.getUserId());
         return "redirect:/activities/" + activityId + "/variants/" + saved.getId();
+    }
+
+    // ---- Delete variant ----
+
+    @PostMapping("/{variantId}/delete")
+    public String delete(@PathVariable UUID activityId,
+                         @PathVariable UUID variantId,
+                         @AuthenticationPrincipal PortalUserDetails principal,
+                         RedirectAttributes redirectAttributes) {
+        catalogService.deleteVariant(variantId, principal.getUserId(), principal.isAdmin());
+        redirectAttributes.addFlashAttribute("message", "Вариант удалён");
+        return "redirect:/my-activities";
     }
 
     // ---- Edit variant (Block 4) ----

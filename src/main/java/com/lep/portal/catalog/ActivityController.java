@@ -131,6 +131,15 @@ public class ActivityController {
 
     // ---- Edit activity (Block 4) ----
 
+    @PostMapping("/{id}/delete")
+    public String delete(@PathVariable UUID id,
+                         @AuthenticationPrincipal PortalUserDetails principal,
+                         RedirectAttributes redirectAttributes) {
+        catalogService.deleteActivity(id, principal.getUserId(), principal.isAdmin());
+        redirectAttributes.addFlashAttribute("message", "Активность удалена");
+        return "redirect:/my-activities";
+    }
+
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable UUID id,
                            @AuthenticationPrincipal PortalUserDetails principal,

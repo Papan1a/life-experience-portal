@@ -16,11 +16,18 @@
             <a th:href="@{/(category=${category.slug})}" th:text="${category.labelRu}">Категория</a> →
             <span th:text="${activity.title}">Активность</span>
         </div>
-        <a th:if="${canEdit}"
-           th:href="@{/activities/{id}/edit(id=${activity.id})}"
-           class="btn btn-secondary btn-small">
-            Редактировать
-        </a>
+        <div th:if="${canEdit}" style="display: flex; gap: 8px; align-items: center;">
+            <a th:href="@{/activities/{id}/edit(id=${activity.id})}"
+               class="btn btn-secondary btn-small">
+                Редактировать
+            </a>
+            <form th:action="@{/activities/{id}/delete(id=${activity.id})}" method="post"
+                  onsubmit="return confirm('Удалить активность? Это действие необратимо.');"
+                  style="display:inline">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-small" style="color: var(--color-error);">Удалить</button>
+            </form>
+        </div>
     </nav>
 
     <!-- Основная карточка активности -->

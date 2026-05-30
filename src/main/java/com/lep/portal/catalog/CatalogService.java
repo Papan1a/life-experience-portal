@@ -96,6 +96,24 @@ public class CatalogService {
         return activityRepository.findByCreatedBy(userId);
     }
 
+    public void deleteActivity(UUID activityId, UUID actorId, boolean isAdmin) {
+        Activity existing = getActivity(activityId);
+        if (!existing.getCreatedBy().equals(actorId) && !isAdmin) {
+            throw new ForbiddenException("Только автор может удалить активность");
+        }
+        existing.setDeletedAt(java.time.Instant.now());
+        activityRepository.save(existing);
+    }
+
+    public void deleteVariant(UUID variantId, UUID actorId, boolean isAdmin) {
+        Variant existing = getVariant(variantId);
+        if (!existing.getCreatedBy().equals(actorId) && !isAdmin) {
+            throw new ForbiddenException("Только автор может удалить вариант");
+        }
+        existing.setDeletedAt(java.time.Instant.now());
+        variantRepository.save(existing);
+    }
+
     public Activity createActivity(Activity activity, UUID actorId) {
         activity.setCreatedBy(actorId);
         activity.setStatus("ACTIVE");

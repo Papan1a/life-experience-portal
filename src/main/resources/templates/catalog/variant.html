@@ -15,11 +15,19 @@
             <a th:href="@{/activities/{id}(id=${activity.id})}" th:text="${activity.title}">Активность</a> →
             <span th:text="${variant.title}">Вариант</span>
         </div>
-        <a th:if="${canEdit}"
-           th:href="@{/activities/{aid}/variants/{vid}/edit(aid=${activity.id},vid=${variant.id})}"
-           class="btn btn-secondary btn-small">
-            Редактировать
-        </a>
+        <div th:if="${canEdit}" style="display: flex; gap: 8px; align-items: center;">
+            <a th:href="@{/activities/{aid}/variants/{vid}/edit(aid=${activity.id},vid=${variant.id})}"
+               class="btn btn-secondary btn-small">
+                Редактировать
+            </a>
+            <form th:action="@{/activities/{aid}/variants/{vid}/delete(aid=${activity.id},vid=${variant.id})}"
+                  method="post"
+                  onsubmit="return confirm('Удалить вариант? Это действие необратимо.');"
+                  style="display:inline">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-small" style="color: var(--color-error);">Удалить</button>
+            </form>
+        </div>
     </nav>
 
     <!-- Основная карточка варианта -->
