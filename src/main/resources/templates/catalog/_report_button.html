@@ -1,18 +1,29 @@
-<!-- HTMX fragment: report button -->
-<th:block xmlns:th="http://www.thymeleaf.org">
-    <div id="report-form" th:fragment="reportButton(targetType, targetId)"
-         style="padding: 12px; background: var(--color-bg-secondary); border-radius: 8px;">
-        <details style="font-size: 0.85rem;">
-            <summary class="text-muted" style="cursor: pointer; color: var(--color-text-muted);">
-                ⚠ Сообщить о проблеме
-            </summary>
-            <form th:attr="hx-post=@{/reports}"
-                  hx-target="#report-result"
-                  hx-swap="innerHTML"
-                  style="margin-top: 8px;">
+<!-- Report button + dialog (HTMX fragment) -->
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="reportButton(targetType, targetId)"
+          th:with="dialogId='report-dialog-' + ${targetId}">
+    <!-- Trigger -->
+    <button type="button" class="btn btn-small btn-secondary open-report-btn"
+            th:attr="data-dialog-target=${dialogId}">
+        ⚠ Сообщить о проблеме
+    </button>
+
+    <!-- Dialog -->
+    <dialog th:id="${dialogId}" style="border: none; border-radius: 12px; padding: 0;
+            max-width: 420px; width: 90%;">
+        <div style="padding: 24px;">
+            <div class="flex justify-between align-center mb-3">
+                <strong style="font-size: 1.05rem;">⚠ Сообщить о проблеме</strong>
+                <button type="button" class="btn btn-small btn-secondary close-dialog-btn"
+                        th:attr="data-dialog-target=${dialogId}"
+                        style="font-size: 1.2rem; line-height: 1; padding: 0 4px;">✕</button>
+            </div>
+
+            <form th:attr="hx-post=@{/reports},
+                           hx-target='#report-result-' + ${targetId},
+                           hx-swap=innerHTML,
+                           data-dialog-id=${dialogId}">
                 <input type="hidden" name="target_type" th:value="${targetType}">
                 <input type="hidden" name="target_id" th:value="${targetId}">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 
                 <div class="form-group mb-2">
                     <select name="reason" required
@@ -29,14 +40,57 @@
                 </div>
 
                 <div class="form-group mb-2">
-                    <textarea name="comment" rows="2" placeholder="Комментарий (необязательно)"
-                              style="width: 100%; padding: 6px 10px; font-size: 0.85rem;
-                                     border: 1px solid var(--color-border); border-radius: 4px;"></textarea>
+                    <textarea name="comment" rows="2" maxlength="200"
+                              placeholder="Комментарий (необязательно, до 200 символов)"
+                              class="form-control"
+                              style="resize: none; width: 100%; padding: 6px 10px; font-size: 0.85rem;"></textarea>
                 </div>
 
-                <button type="submit" class="btn btn-secondary btn-small">Отправить</button>
+                <div th:id="'report-result-' + ${targetId}" style="margin-bottom: 8px; font-size: 0.85rem;"></div>
+
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-small">Отправить</button>
+                    <button type="button" class="btn btn-secondary btn-small close-dialog-btn"
+                            th:attr="data-dialog-target=${dialogId}">Отмена</button>
+                </div>
             </form>
-            <div id="report-result" style="margin-top: 8px; font-size: 0.85rem;"></div>
-        </details>
-    </div>
+        </div>
+    </dialog>
+
+    <script>
+        (function() {
+            var block = document.currentScript.parentElement;
+            // Wire up open button
+            var openBtn = block.querySelector('.open-report-btn');
+            var closeBtns = block.querySelectorAll('.close-dialog-btn');
+            if (openBtn) {
+                var dialogId = openBtn.getAttribute('data-dialog-target');
+                if (dialogId) {
+                    openBtn.addEventListener('click', function() {
+                        document.getElementById(dialogId).showModal();
+                    });
+                }
+            }
+            // Wire up close buttons
+            closeBtns.forEach(function(btn) {
+                var dlgId = btn.getAttribute('data-dialog-target');
+                if (dlgId) {
+                    btn.addEventListener('click', function() {
+                        document.getElementById(dlgId).close();
+                    });
+                }
+            });
+            // Wire up afterSwap for auto-close
+            var form = block.querySelector('form');
+            if (form) {
+                var dlgDataId = form.getAttribute('data-dialog-id');
+                if (dlgDataId) {
+                    form.addEventListener('htmx:afterSwap', function() {
+                        var dlg = document.getElementById(dlgDataId);
+                        if (dlg) { setTimeout(function() { dlg.close(); }, 2000); }
+                    });
+                }
+            }
+        })();
+    </script>
 </th:block>

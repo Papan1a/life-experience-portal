@@ -1,8 +1,10 @@
 package com.lep.portal.admin;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +20,7 @@ import com.lep.portal.catalog.Tag;
 import com.lep.portal.catalog.TagRepository;
 import com.lep.portal.catalog.Variant;
 import com.lep.portal.catalog.VariantRepository;
+import com.lep.portal.user.PortalUserDetails;
 
 @Controller
 @RequestMapping("/admin")
@@ -27,13 +30,16 @@ public class AdminController {
     private final ActivityRepository activityRepository;
     private final VariantRepository variantRepository;
     private final TagRepository tagRepository;
+    private final ReportRepository reportRepository;
 
     public AdminController(ActivityRepository activityRepository,
                            VariantRepository variantRepository,
-                           TagRepository tagRepository) {
+                           TagRepository tagRepository,
+                           ReportRepository reportRepository) {
         this.activityRepository = activityRepository;
         this.variantRepository = variantRepository;
         this.tagRepository = tagRepository;
+        this.reportRepository = reportRepository;
     }
 
     @GetMapping
@@ -99,9 +105,26 @@ public class AdminController {
     }
 
     @GetMapping("/reports")
-    public String reports(Model model) {
-        model.addAttribute("reportsMessage", "Функция отчётов будет доступна в следующей версии.");
-        return "admin/dashboard";
+    public String reports(@RequestParam(required = false) String status, Model model) {
+        List<Report> reportList = (status != null && !status.isBlank())
+                ? reportRepository.findByStatus(status)
+                : reportRepository.findAllByOrderByCreatedAtDesc();
+        model.addAttribute("reports", reportList);
+        model.addAttribute("currentStatus", status);
+        return "admin/reports";
+    }
+
+    @PostMapping("/reports/{id}/resolve")
+    public String resolveReport(@PathVariable UUID id,
+                                @AuthenticationPrincipal PortalUserDetails principal,
+                                RedirectAttributes ra) {
+        Report report = reportRepository.findById(id).orElseThrow();
+        report.setStatus("RESOLVED");
+        report.setResolvedAt(java.time.Instant.now());
+        report.setResolvedBy(principal.getUserId());
+        reportRepository.save(report);
+        ra.addFlashAttribute("success", "Жалоба отмечена как обработанная");
+        return "redirect:/admin/reports";
     }
 
     private String normalizeSlug(String input) {

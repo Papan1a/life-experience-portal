@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{_layout}">
+<head>
+    <title>Жалобы — Админ</title>
+</head>
+<body>
+<main layout:fragment="content">
+    <h1 class="page-title">Жалобы</h1>
+
+    <!-- Фильтр по статусу -->
+    <div class="mb-4 flex gap-2 align-center" style="flex-wrap: wrap;">
+        <a th:href="@{/admin/reports}" class="btn btn-small"
+           th:classappend="${currentStatus == null} ? 'btn-primary' : 'btn-secondary'">Все</a>
+        <a th:href="@{/admin/reports(status='NEW')}" class="btn btn-small"
+           th:classappend="${currentStatus == 'NEW'} ? 'btn-primary' : 'btn-secondary'">Новые</a>
+        <a th:href="@{/admin/reports(status='REVIEWED')}" class="btn btn-small"
+           th:classappend="${currentStatus == 'REVIEWED'} ? 'btn-primary' : 'btn-secondary'">На рассмотрении</a>
+        <a th:href="@{/admin/reports(status='RESOLVED')}" class="btn btn-small"
+           th:classappend="${currentStatus == 'RESOLVED'} ? 'btn-primary' : 'btn-secondary'">Обработаны</a>
+        <a th:href="@{/admin/reports(status='DISMISSED')}" class="btn btn-small"
+           th:classappend="${currentStatus == 'DISMISSED'} ? 'btn-primary' : 'btn-secondary'">Отклонены</a>
+    </div>
+
+    <div th:if="${reports.isEmpty()}" class="card text-muted text-center">
+        <p>Жалоб нет.</p>
+    </div>
+
+    <table th:if="${!reports.isEmpty()}" class="w-full" style="border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid var(--color-border);">
+                <th style="text-align: left; padding: 8px;">Дата</th>
+                <th style="text-align: left; padding: 8px;">Тип</th>
+                <th style="text-align: left; padding: 8px;">Объект</th>
+                <th style="text-align: left; padding: 8px;">Причина</th>
+                <th style="text-align: left; padding: 8px;">Комментарий</th>
+                <th style="text-align: left; padding: 8px;">Статус</th>
+                <th style="text-align: left; padding: 8px;">Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="r : ${reports}" style="border-bottom: 1px solid var(--color-border);">
+                <td style="padding: 8px; font-size: 0.85rem; white-space: nowrap;"
+                    th:text="${#temporals.format(r.createdAt, 'dd.MM.yyyy HH:mm')}">—</td>
+                <td style="padding: 8px; font-size: 0.85rem;" th:text="${r.targetType}">—</td>
+                <td style="padding: 8px; font-size: 0.85rem;">
+                    <a th:if="${r.targetType == 'activity'}"
+                       th:href="@{/activities/{id}(id=${r.targetId})}"
+                       th:text="${r.targetId}" style="font-size: 0.8rem;">ID</a>
+                    <a th:if="${r.targetType == 'variant'}"
+                       th:href="@{/activities/{id}(id=${r.targetId})}"
+                       th:text="${r.targetId}" style="font-size: 0.8rem;">ID</a>
+                </td>
+                <td style="padding: 8px; font-size: 0.85rem;" th:text="${r.reason}">—</td>
+                <td style="padding: 8px; font-size: 0.85rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                    th:text="${r.comment}">—</td>
+                <td style="padding: 8px; font-size: 0.85rem;">
+                    <span class="badge"
+                          th:classappend="${r.status == 'NEW'} ? 'badge-active' : (${r.status == 'RESOLVED'} ? 'badge-active' : 'badge-expired')"
+                          th:text="${r.status}">NEW</span>
+                </td>
+                <td style="padding: 8px; font-size: 0.85rem;">
+                    <form th:if="${r.status != 'RESOLVED' && r.status != 'DISMISSED'}"
+                          th:action="@{/admin/reports/{id}/resolve(id=${r.id})}"
+                          method="post" style="display:inline">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="btn btn-small btn-secondary">Обработано</button>
+                    </form>
+                    <span th:if="${r.status == 'RESOLVED' || r.status == 'DISMISSED'}"
+                          class="text-muted" style="font-size: 0.8rem;">—</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="mt-4">
+        <a th:href="@{/admin}" class="btn btn-secondary">← Назад к админке</a>
+    </div>
+</main>
+</body>
+</html>

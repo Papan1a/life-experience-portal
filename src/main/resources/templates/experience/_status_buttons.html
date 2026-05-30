@@ -4,7 +4,7 @@
     <form th:attr="hx-post=@{/experiences}"
           hx-swap="outerHTML"
           hx-target="#status-buttons"
-          class="flex gap-2 align-center mt-4"
+           class="flex gap-2 align-center"
           style="flex-wrap: wrap;">
         <input type="hidden" name="activityId" th:value="${activityId}"/>
         <input type="hidden" name="variantId" th:value="${variantId}"/>

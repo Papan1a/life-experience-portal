@@ -18,8 +18,6 @@
 
 | Issue | Задача | Инструкция | Приоритет / примечания |
 |---|---|---|---|
-| #9 | Выровнять кнопки статусов и «В избранное» по высоте | [`tasks/issue-9-button-alignment.md`](tasks/issue-9-button-alignment.md) | Истинная причина — padded-блок жалобы; решение = вынести жалобу (в #13) + center |
-| #13 | Система жалоб: хранение в БД + админка + UI-модалка | [`tasks/issue-13-reports-system.md`](tasks/issue-13-reports-system.md) | Объединяет исходный #13 (reports не сохраняются) + новый UI (`<dialog>`, лимит 200, resize:none); связан с #9 |
 | #12 | Управление профилем (имя/фото) | [`tasks/issue-12-profile-management.md`](tasks/issue-12-profile-management.md) | Почти готово; фото зависит от #7 / R2 |
 | #34 | Баг: создание активности молча не срабатывает (рассинхрон `<select>`↔enum) | [`tasks/issue-34-create-activity-enum-mismatch.md`](tasks/issue-34-create-activity-enum-mismatch.md) | Опции из `values()` + видимые ошибки валидации |
 | #35 | Автотесты на «тихие» баги форм (зависит от #34) | [`tasks/issue-35-form-validation-tests.md`](tasks/issue-35-form-validation-tests.md) | Инвариант: каждая опция select принимается сервером |
@@ -59,6 +57,8 @@
 | #24 | Ошибка 400 при вводе тегов | `variant_form.html`, `activity_form.html`, `TagController.java`, `_tag_suggestions.html` | 30.05.2026 |
 | | 16 | Редизайн страницы входа под стилистику портала | `main.css`, `login.html`, `register.html`, `main_background2.png` | 30.05.2026 |
 | #26 | Раскладка категорий: чипсы укладываются в ≤2 строки (компактный CSS чипсов) | `main.css` | 30.05.2026 |
+| #9 | Выравнивание кнопок статусов и «В избранное» (flex-end → center, вынос жалобы из блока) | `_status_buttons.html`, `activity.html`, `variant.html` | 30.05.2026 |
+| #13 | Система жалоб: хранение в БД + админка + UI-модалка (`<dialog>`, лимит 200, resize:none) | `V7__reports.sql`, `Report.java`, `ReportRepository.java`, `ReportController.java`, `AdminController.java`, `admin/reports.html`, `_report_button.html`, `activity.html`, `variant.html` | 30.05.2026 |
 | #28 | Карточка активности кликабельна целиком (stretched link через `::after`) | `main.css` | 30.05.2026 |
 | #32 | Баг `/saved`: отметка «В избранном» меняется не у той карточки (фрагмент → `<form>` + `hx-target="this"`, убран дубль `id`) | `experience/_bookmark_button.html` | 30.05.2026 |
 ---

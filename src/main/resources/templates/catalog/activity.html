@@ -66,8 +66,8 @@
 
         <!-- Статус и закладка (HTMX) -->
         <div class="flex justify-between mt-4"
-             style="border-top: 1px solid var(--color-border); padding-top: 16px;
-                    align-items: flex-end; gap: 16px; flex-wrap: wrap;">
+              style="border-top: 1px solid var(--color-border); padding-top: 16px;
+                     align-items: center; gap: 16px; flex-wrap: wrap;">
             <div th:replace="~{experience/_status_buttons :: statusButtons(${activity.id}, null, ${userExperience})}">
                 <!-- Status buttons rendered by HTMX fragment -->
             </div>
@@ -75,10 +75,12 @@
                 <div th:replace="~{experience/_bookmark_button :: bookmarkButton(${activity.id}, null, ${bookmark})}">
                     <!-- Bookmark button rendered by HTMX fragment -->
                 </div>
-                <div th:replace="~{catalog/_report_button :: reportButton('activity', ${activity.id})}">
-                </div>
             </div>
         </div>
+
+        <!-- Жалоба (отдельно от статусов/избранного) -->
+        <div th:insert="~{catalog/_report_button :: reportButton('activity', ${activity.id})}"
+             style="margin-top: 8px;"></div>
     </div>
 
     <!-- Варианты -->

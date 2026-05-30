@@ -3,8 +3,6 @@ package com.lep.portal.admin;
 import java.util.Set;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,10 +14,14 @@ import com.lep.portal.user.PortalUserDetails;
 @RestController
 public class ReportController {
 
-    private static final Logger log = LoggerFactory.getLogger(ReportController.class);
-
     private static final Set<String> VALID_REASONS = Set.of(
             "duplicate", "unsafe", "spam", "wrong_category", "bad_description", "other");
+
+    private final ReportRepository reportRepository;
+
+    public ReportController(ReportRepository reportRepository) {
+        this.reportRepository = reportRepository;
+    }
 
     @PostMapping("/reports")
     public ResponseEntity<String> report(@AuthenticationPrincipal PortalUserDetails principal,
@@ -32,9 +34,18 @@ public class ReportController {
             return ResponseEntity.badRequest().body("Недопустимая причина жалобы");
         }
 
-        log.warn("REPORT: user={} target_type={} target_id={} reason={} comment={}",
-                principal.getUserId(), targetType, targetId, reason,
-                comment != null ? comment : "<нет>");
+        Report report = new Report();
+        report.setReporterUserId(principal.getUserId());
+        report.setTargetType(targetType);
+        report.setTargetId(targetId);
+        report.setReason(reason);
+        if (comment != null) {
+            String trimmed = comment.length() > 200 ? comment.substring(0, 200) : comment;
+            report.setComment(trimmed);
+        }
+        report.setStatus("NEW");
+
+        reportRepository.save(report);
 
         return ResponseEntity.ok("Спасибо, ваша жалоба принята. Мы рассмотрим её.");
     }
