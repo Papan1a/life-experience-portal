@@ -23,7 +23,7 @@ public class TagController {
     }
 
     @GetMapping("/suggest")
-    public String suggest(@RequestParam("q") String query, Model model) {
+    public String suggest(@RequestParam(value = "q", required = false, defaultValue = "") String query, Model model) {
         List<Tag> tags = catalogService.getTagsByPrefix(query);
         model.addAttribute("suggestions", tags);
         return "catalog/_tag_suggestions";

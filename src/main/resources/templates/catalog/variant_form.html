@@ -51,12 +51,13 @@
             <label for="tags">Теги (через запятую)</label>
             <input type="text" id="tags" th:field="*{tags}" class="form-control"
                    placeholder="Например: вода, спорт"
-                   autocomplete="off"
-                   list="variant-tag-suggestions"
-                   hx-get="/tags/suggest"
-                   hx-trigger="keyup changed delay:200ms"
-                   hx-target="#variant-tag-suggestions"
-                   hx-include="[name='tags']"/>
+                    autocomplete="off"
+                    list="variant-tag-suggestions"
+                    hx-get="/tags/suggest"
+                    hx-trigger="keyup changed delay:200ms"
+                    hx-target="#variant-tag-suggestions"
+                    hx-swap="innerHTML"
+                    hx-vals="js:{q: event.target.value.split(',').pop().trim()}"/>
             <datalist id="variant-tag-suggestions">
                 <option th:each="t : ${suggestions}" th:value="${t.slug}" th:text="${t.name}"/>
             </datalist>

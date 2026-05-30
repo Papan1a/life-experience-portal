@@ -1,4 +1,2 @@
 <!-- Tag autocomplete suggestions (HTMX fragment) -->
-<ul class="tag-suggestions" id="tag-suggestions">
-    <li th:each="t : ${suggestions}" th:text="${t.name}"></li>
-</ul>
+<option th:each="t : ${suggestions}" th:value="${t.slug}" th:text="${t.name}"></option>
