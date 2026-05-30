@@ -58,6 +58,10 @@ public class VariantController {
         model.addAttribute("activity", activity);
         model.addAttribute("variant", variant);
 
+        boolean canEdit = principal != null &&
+                (principal.isAdmin() || variant.getCreatedBy().equals(principal.getUserId()));
+        model.addAttribute("canEdit", canEdit);
+
         Optional<UserExperience> ux = userExperienceRepository
                 .findByUserActivityVariant(principal.getUserId(), activityId, variantId);
         model.addAttribute("userExperience", ux.orElse(null));

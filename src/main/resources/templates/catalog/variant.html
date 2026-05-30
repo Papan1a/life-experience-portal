@@ -1,4 +1,4 @@
-слож<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{_layout}">
@@ -9,10 +9,17 @@
 <main layout:fragment="content" class="app-layout">
 
     <!-- Хлебные крошки -->
-    <nav class="breadcrumb text-muted mb-4" style="font-size: 0.85rem;">
-        <a href="/">Каталог</a> →
-        <a th:href="@{/activities/{id}(id=${activity.id})}" th:text="${activity.title}">Активность</a> →
-        <span th:text="${variant.title}">Вариант</span>
+    <nav class="breadcrumb text-muted mb-4 flex justify-between align-center" style="font-size: 0.85rem;">
+        <div>
+            <a href="/">Каталог</a> →
+            <a th:href="@{/activities/{id}(id=${activity.id})}" th:text="${activity.title}">Активность</a> →
+            <span th:text="${variant.title}">Вариант</span>
+        </div>
+        <a th:if="${canEdit}"
+           th:href="@{/activities/{aid}/variants/{vid}/edit(aid=${activity.id},vid=${variant.id})}"
+           class="btn btn-secondary btn-small">
+            Редактировать
+        </a>
     </nav>
 
     <!-- Основная карточка варианта -->
